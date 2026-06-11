@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinity Key Brain Trainer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Syne',sans-serif;background:#07070f;color:#f0ead6;min-height:100vh}
+.bt-screen{padding:28px 24px;display:none;min-height:100vh;flex-direction:column;max-width:720px;margin:0 auto}
+.bt-screen.active{display:flex}
+.bt-bebas{font-family:'Cormorant Garamond',cursive}
+.bt-mono{font-family:'JetBrains Mono',monospace}
+.bt-gold{background:linear-gradient(90deg,#C9973A,#E8C547);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.bt-goldbar{height:2px;background:linear-gradient(90deg,#C9973A,#E8C547);border-radius:2px}
+.bt-btn-gold{background:linear-gradient(90deg,#C9973A,#E8C547);color:#07070f;border:none;padding:11px 24px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:4px}
+.bt-btn-gold:disabled{opacity:.3;cursor:not-allowed}
+.bt-btn-ghost{background:transparent;color:#b8b09a;border:1px solid rgba(255,255,255,.15);padding:7px 14px;font-family:'Syne',sans-serif;font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:4px}
+.bt-btn-ghost:hover{border-color:rgba(245,230,66,.4);color:#f0ead6}
+.bt-btn-green{background:transparent;color:#4ade80;border:1px solid #4ade80;padding:7px 14px;font-family:'Syne',sans-serif;font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:4px}
+.bt-pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(245,230,66,.3);color:#C9973A;background:rgba(245,230,66,.07)}
+.bt-card{background:#13131f;border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:16px;cursor:pointer;position:relative;overflow:hidden;margin-bottom:10px}
+.bt-card.sel{background:#1a1a2a;border-color:rgba(245,230,66,.4)}
+.bt-card.sel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#C9973A,#E8C547)}
+.bt-stat{background:#13131f;border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:16px 12px;text-align:center;position:relative;overflow:hidden;flex:1}
+.bt-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#C9973A,#E8C547)}
+.bt-divider{height:1px;background:linear-gradient(90deg,transparent,rgba(245,230,66,.25),transparent);margin:16px 0}
+.bt-input{width:100%;padding:12px 14px;background:#13131f;border:1px solid rgba(255,255,255,.12);border-radius:4px;color:#f0ead6;font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:.18em;outline:none;text-align:center}
+.bt-input:focus{border-color:rgba(245,230,66,.4)}
+.bt-input-sm{font-size:13px;letter-spacing:.02em;text-align:left;padding:10px 12px}
+.bt-textarea{background:transparent;border:none;outline:none;width:100%;resize:none;font-family:'JetBrains Mono',monospace;font-size:15px;line-height:1.9;color:#f0ead6;caret-color:#C9973A;flex:1;min-height:300px}
+.bt-textarea::placeholder{color:rgba(240,234,214,.2)}
+.bt-scard{background:#13131f;border:1px solid rgba(255,255,255,.07);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.bt-scard-hd{padding:12px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.bt-scard-bd{border-top:1px solid rgba(255,255,255,.06);padding:12px 14px;max-height:160px;overflow-y:auto;display:none}
+.bt-gameover{position:fixed;inset:0;background:rgba(7,7,15,.93);z-index:50;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.bt-gameover.show{display:flex}
+#s-write{padding:0;gap:0;max-width:100%}
+</style>
+</head>
+<body>
+
+<div id="bt-gameover" class="bt-gameover">
+  <div class="bt-bebas bt-gold" style="font-size:64px;letter-spacing:.05em">TIME'S UP</div>
+  <p style="color:#b8b09a;font-size:14px;letter-spacing:.1em">Pause budget exhausted — saving session...</p>
+</div>
+
+<!-- WELCOME -->
+<div id="s-welcome" class="bt-screen active" style="justify-content:center;align-items:center;text-align:left;padding:40px 24px">
+  <div style="width:100%;max-width:500px">
+    <div class="bt-bebas bt-gold" style="font-size:28px;letter-spacing:.12em;margin-bottom:24px">Welcome to The Infinity Key Brain Trainer</div>
+    
+    <div style="margin-bottom:28px">
+      <div class="bt-bebas" style="font-size:16px;color:#f0ead6;margin-bottom:10px;letter-spacing:.06em">How It Works</div>
+      <p style="color:#b8b09a;font-size:13px;line-height:1.8;margin-bottom:12px">Brain Trainer is a stream-of-consciousness writing engine. You choose a mode, and the clock automatically starts counting your active writing time.</p>
+      
+      <div style="background:#13131f;border-left:2px solid #C9973A;padding:12px 14px;margin-bottom:16px;border-radius:2px">
+        <div style="font-weight:600;color:#C9973A;font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Free Thought</div>
+        <p style="color:rgba(240,234,214,.6);font-size:11px;line-height:1.6">Write whatever is on your mind. No rules, no direction. Pure freewriting.</p>
+      </div>
+      
+      <div style="background:#13131f;border-left:2px solid #C9973A;padding:12px 14px;margin-bottom:16px;border-radius:2px">
+        <div style="font-weight:600;color:#C9973A;font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Topic-Specific</div>
+        <p style="color:rgba(240,234,214,.6);font-size:11px;line-height:1.6">Choose a subject and write everything you know about it. Great for studying.</p>
+      </div>
+      
+      <div style="background:#13131f;border-left:2px solid #C9973A;padding:12px 14px;margin-bottom:16px;border-radius:2px">
+        <div style="font-weight:600;color:#C9973A;font-size:12px;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px">Positive Mindset</div>
+        <p style="color:rgba(240,234,214,.6);font-size:11px;line-height:1.6">Respond to a guided prompt. Reflective, intentional, growth-focused.</p>
+      </div>
+    </div>
+    
+    <div style="margin-bottom:28px">
+      <div class="bt-bebas" style="font-size:16px;color:#f0ead6;margin-bottom:10px;letter-spacing:.06em">The Dual Clock</div>
+      <p style="color:#b8b09a;font-size:13px;line-height:1.8">You have two clocks running:</p>
+      <p style="color:#b8b09a;font-size:13px;line-height:1.8;margin-top:8px"><strong style="color:#C9973A">Active Time:</strong> Counts only while you're typing. This becomes your XP (1 minute = 1 XP).</p>
+      <p style="color:#b8b09a;font-size:13px;line-height:1.8;margin-top:8px"><strong style="color:#C9973A">Pause Budget:</strong> If you stop typing for more than 3 seconds, the pause clock starts. You have 30 seconds of pause time total. When it runs out, your session ends automatically.</p>
+      <p style="color:#b8b09a;font-size:13px;line-height:1.8;margin-top:12px;font-style:italic">The goal: stay in flow. Write continuously. Stop for too long, and time's up.</p>
+    </div>
+    
+    <button class="bt-btn-gold" onclick="show('login')" style="width:100%;padding:13px">Get Started</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="s-login" class="bt-screen active" style="justify-content:center;align-items:center;text-align:center">
+  <div style="width:100%;max-width:360px">
+    <span class="bt-bebas bt-gold" style="font-size:22px;letter-spacing:.18em">INFINITY KEY</span>
+    <div class="bt-goldbar" style="width:64px;margin:10px auto 18px"></div>
+    <div class="bt-bebas" style="font-size:72px;letter-spacing:.04em;line-height:1;color:#f0ead6">BRAIN<br>TRAINER</div>
+    <p style="color:#b8b09a;font-size:11px;letter-spacing:.14em;margin:10px 0 28px;text-transform:uppercase">Stream of Consciousness Engine</p>
+    <label style="display:block;font-size:10px;letter-spacing:.15em;color:#b8b09a;margin-bottom:8px;text-transform:uppercase">Email</label>
+    <input class="bt-input" id="li-email" placeholder="your.email@example.com" onkeydown="if(event.key==='Enter')btLogin()">
+    <label style="display:block;font-size:10px;letter-spacing:.15em;color:#b8b09a;margin-bottom:8px;margin-top:14px;text-transform:uppercase">Password</label>
+    <input class="bt-input" id="li-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')btLogin()">
+    <div id="li-err" style="color:#f87171;font-size:11px;margin-top:6px;display:none">Email and password required.</div>
+    <button class="bt-btn-gold" onclick="btLogin()" style="width:100%;margin-top:16px;padding:13px">Sign In</button>
+    <button class="bt-btn-ghost" onclick="show('coach-login')" style="width:100%;margin-top:8px;padding:8px;opacity:.3;font-size:9px">Manage Sessions</button>
+  </div>
+</div>
+
+<!-- COACH LOGIN -->
+<div id="s-coach-login" class="bt-screen" style="justify-content:center;align-items:center;text-align:center">
+  <div style="width:100%;max-width:360px">
+    <button onclick="show('login')" style="position:absolute;top:24px;left:24px;background:transparent;border:none;cursor:pointer;color:#b8b09a;font-size:18px;padding:2px 6px">←</button>
+    <div class="bt-bebas bt-gold" style="font-size:28px;letter-spacing:.12em;margin-bottom:28px">Coach Dashboard</div>
+    <label style="display:block;font-size:10px;letter-spacing:.15em;color:#b8b09a;margin-bottom:8px;text-transform:uppercase">Coach PIN</label>
+    <input class="bt-input" id="coach-pin" type="password" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')btCoachLogin()">
+    <div id="coach-err" style="color:#f87171;font-size:11px;margin-top:6px;display:none">Invalid PIN.</div>
+    <button class="bt-btn-gold" onclick="btCoachLogin()" style="width:100%;margin-top:16px;padding:13px">Access Dashboard</button>
+  </div>
+</div>
+
+<!-- CATEGORY -->
+<div id="s-cat" class="bt-screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <div>
+      <div class="bt-bebas bt-gold" style="font-size:18px;letter-spacing:.16em">INFINITY KEY</div>
+      <div class="bt-bebas" style="font-size:22px;color:#f0ead6;letter-spacing:.05em;margin-top:1px">BRAIN TRAINER</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="bt-btn-ghost" onclick="btShowProgress()">Progress</button>
+      <button class="bt-btn-ghost" onclick="btLogout()">Log Out</button>
+    </div>
+  </div>
+  <div style="margin-bottom:6px">
+    <span class="bt-mono" style="font-size:11px;color:#b8b09a">Logged in as </span>
+    <span id="cat-code" class="bt-mono" style="font-size:11px;color:#C9973A;letter-spacing:.15em"></span>
+  </div>
+  <div class="bt-divider"></div>
+  <div class="bt-bebas" style="font-size:26px;letter-spacing:.08em;color:#f0ead6;margin-bottom:18px">Choose Your Category</div>
+  <div id="cat-free" class="bt-card" onclick="btSelCat('free')">
+    <div style="font-size:15px;font-weight:600;color:#b8b09a;margin-bottom:3px" id="cfl">Free Thought</div>
+    <div style="font-size:12px;color:rgba(240,234,214,.4)">Write whatever is on your mind — no direction, no limits.</div>
+  </div>
+  <div id="cat-topic" class="bt-card" onclick="btSelCat('topic')">
+    <div style="font-size:15px;font-weight:600;color:#b8b09a;margin-bottom:3px" id="ctl">Topic-Specific</div>
+    <div style="font-size:12px;color:rgba(240,234,214,.4)">Name a subject, then write everything you know about it.</div>
+  </div>
+  <div id="cat-positive" class="bt-card" onclick="btSelCat('positive')">
+    <div style="font-size:15px;font-weight:600;color:#b8b09a;margin-bottom:3px" id="cpl">Positive Mindset</div>
+    <div style="font-size:12px;color:rgba(240,234,214,.4)">Choose a structured prompt to guide your writing.</div>
+  </div>
+  <div id="topic-wrap" style="display:none;margin-bottom:14px">
+    <label style="display:block;font-size:10px;letter-spacing:.15em;color:#b8b09a;margin-bottom:8px;text-transform:uppercase">Subject or Class Name</label>
+    <input type="text" id="topic-in" class="bt-input bt-input-sm" placeholder="e.g. Photosynthesis, World War II...">
+  </div>
+  <div id="pos-wrap" style="display:none;margin-bottom:14px">
+    <label style="display:block;font-size:10px;letter-spacing:.15em;color:#b8b09a;margin-bottom:10px;text-transform:uppercase">Select a Prompt</label>
+    <div id="pos-list"></div>
+  </div>
+  <button class="bt-btn-gold" id="start-btn" onclick="btStartSession()" disabled style="padding:13px 36px;margin-top:auto">Start Writing</button>
+</div>
+
+<!-- WRITING -->
+<div id="s-write" class="bt-screen">
+  <div style="padding:12px 24px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;justify-content:space-between;align-items:center;background:#07070f;position:sticky;top:0;z-index:10;width:100%">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button onclick="btGoHome()" style="background:transparent;border:none;cursor:pointer;color:#b8b09a;font-size:18px;padding:2px 6px" title="Home">&#8962;</button>
+      <span class="bt-pill" id="w-cat-label"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px">
+      <div style="text-align:center">
+        <div style="font-size:8px;letter-spacing:.15em;color:#b8b09a;margin-bottom:1px;text-transform:uppercase">Active</div>
+        <div class="bt-bebas" id="c1-disp" style="font-size:22px;color:#b8b09a;line-height:1">00:00</div>
+      </div>
+      <div style="width:1px;height:28px;background:rgba(255,255,255,.1)"></div>
+      <div style="text-align:center">
+        <div style="font-size:8px;letter-spacing:.15em;color:#b8b09a;margin-bottom:1px;text-transform:uppercase">Pause</div>
+        <div class="bt-bebas" id="c2-disp" style="font-size:22px;color:#b8b09a;line-height:1">00:00</div>
+      </div>
+    </div>
+    <button class="bt-btn-green" id="sub-now" onclick="btSubmitNow()" style="display:none">Submit Now</button>
+  </div>
+  <div style="height:3px;background:#13131f;width:100%">
+    <div id="pause-bar" style="height:100%;width:0%;background:#C9973A;transition:width .5s,background .5s"></div>
+  </div>
+  <div id="prompt-bar" style="display:none;padding:10px 24px;background:#0d0d1a;border-bottom:1px solid rgba(255,255,255,.05);width:100%">
+    <p id="prompt-bar-txt" style="font-size:12px;color:rgba(240,234,214,.45);font-style:italic;line-height:1.6;max-width:720px;margin:0 auto"></p>
+  </div>
+  <div style="flex:1;padding:28px 24px;display:flex;flex-direction:column;max-width:720px;margin:0 auto;width:100%">
+    <textarea id="w-area" class="bt-textarea" placeholder="Start writing..."></textarea>
+  </div>
+  <div style="padding:8px 24px;border-top:1px solid rgba(255,255,255,.04);display:flex;justify-content:space-between;max-width:720px;margin:0 auto;width:100%">
+    <span class="bt-mono" id="w-chars" style="font-size:10px;color:rgba(240,234,214,.25)">0 chars</span>
+    <span id="w-status" style="font-size:10px;color:rgba(240,234,214,.2);letter-spacing:.1em">READY</span>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="s-results" class="bt-screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <button onclick="btGoHome()" style="background:transparent;border:none;cursor:pointer;color:#b8b09a;font-size:18px;padding:2px 6px">&#8962;</button>
+    <span class="bt-bebas bt-gold" style="font-size:18px;letter-spacing:.16em">INFINITY KEY</span>
+  </div>
+  <div style="text-align:center;margin-bottom:28px">
+    <div class="bt-bebas bt-gold" style="font-size:52px;letter-spacing:.04em;line-height:1">SESSION<br>COMPLETE</div>
+    <div id="go-badge" style="display:none;margin-top:10px;padding:4px 14px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:4px;color:#f87171;font-size:11px;letter-spacing:.1em"></div>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:24px">
+    <div class="bt-stat"><div class="bt-bebas bt-gold" id="r-kpm" style="font-size:40px;line-height:1">0</div><div style="font-size:9px;letter-spacing:.1em;color:#b8b09a;text-transform:uppercase;margin-top:3px">KPM</div><div style="font-size:9px;color:rgba(240,234,214,.3);margin-top:2px">keystrokes/min</div></div>
+    <div class="bt-stat"><div class="bt-bebas bt-gold" id="r-xp" style="font-size:40px;line-height:1">0</div><div style="font-size:9px;letter-spacing:.1em;color:#b8b09a;text-transform:uppercase;margin-top:3px">XP</div><div style="font-size:9px;color:rgba(240,234,214,.3);margin-top:2px">experience pts</div></div>
+    <div class="bt-stat"><div class="bt-bebas bt-gold" id="r-time" style="font-size:40px;line-height:1">00:00</div><div style="font-size:9px;letter-spacing:.1em;color:#b8b09a;text-transform:uppercase;margin-top:3px">Active</div><div style="font-size:9px;color:rgba(240,234,214,.3);margin-top:2px">typing time</div></div>
+  </div>
+  <div class="bt-divider"></div>
+  <button onclick="btToggleSub()" style="background:transparent;border:none;cursor:pointer;color:#b8b09a;font-size:12px;letter-spacing:.07em;display:flex;align-items:center;gap:6px;padding:0;margin-bottom:12px">
+    <span id="sub-arrow" style="font-size:9px">&#9654;</span><span id="sub-lbl">Show Submission</span>
+  </button>
+  <div id="sub-wrap" style="display:none;padding:14px;background:#0d0d1a;border-radius:4px;border:1px solid rgba(255,255,255,.06);max-height:220px;overflow-y:auto;margin-bottom:16px">
+    <p class="bt-mono" id="sub-text" style="font-size:12px;line-height:1.8;color:#f0ead6;white-space:pre-wrap"></p>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:auto">
+    <button class="bt-btn-gold" onclick="btNewSession()" style="flex:1;padding:12px">New Session</button>
+    <button class="bt-btn-ghost" onclick="btGoHome()" style="padding:12px 20px">Home</button>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div id="s-progress" class="bt-screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <button onclick="btGoHome()" style="background:transparent;border:none;cursor:pointer;color:#b8b09a;font-size:18px;padding:2px 6px">&#8962;</button>
+    <div style="text-align:right">
+      <div class="bt-mono" id="pg-code" style="font-size:11px;color:#C9973A;letter-spacing:.15em"></div>
+      <div id="pg-count" style="font-size:10px;color:#b8b09a;letter-spacing:.07em"></div>
+    </div>
+  </div>
+  <div class="bt-bebas bt-gold" style="font-size:34px;letter-spacing:.06em;margin-bottom:20px">Progress</div>
+  <div style="display:flex;gap:10px;margin-bottom:24px">
+    <div class="bt-stat"><div class="bt-bebas bt-gold" id="pg-xp" style="font-size:34px;line-height:1">0</div><div style="font-size:9px;letter-spacing:.1em;color:#b8b09a;text-transform:uppercase;margin-top:3px">Total XP</div></div>
+    <div class="bt-stat"><div class="bt-bebas bt-gold" id="pg-kpm" style="font-size:34px;line-height:1">0</div><div style="font-size:9px;letter-spacing:.1em;color:#b8b09a;text-transform:uppercase;margin-top:3px">Avg KPM</div></div>
+  </div>
+  <div id="pg-chart-wrap" style="display:none;margin-bottom:20px">
+    <div style="font-size:10px;letter-spacing:.12em;color:#b8b09a;margin-bottom:8px;text-transform:uppercase">KPM Trend</div>
+    <div style="background:#13131f;border:1px solid rgba(255,255,255,.07);border-radius:6px;padding:14px">
+      <svg id="pg-svg" width="100%" height="72" viewBox="0 0 560 72" preserveAspectRatio="none"></svg>
+    </div>
+  </div>
+  <div class="bt-divider"></div>
+  <div style="font-size:10px;letter-spacing:.12em;color:#b8b09a;margin-bottom:12px;text-transform:uppercase">Session History</div>
+  <div id="pg-sessions"></div>
+</div>
+
+<!-- COACH -->
+<div id="s-coach" class="bt-screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <button onclick="btLogout()" style="background:transparent;border:none;cursor:pointer;color:#b8b09a;font-size:18px;padding:2px 6px">&#8962;</button>
+    <span class="bt-bebas bt-gold" style="font-size:18px;letter-spacing:.16em">INFINITY KEY</span>
+  </div>
+  <div class="bt-bebas bt-gold" style="font-size:38px;letter-spacing:.06em;margin-bottom:6px">Coach Dashboard</div>
+  <p id="coach-count" style="color:#b8b09a;font-size:12px;margin-bottom:16px"></p>
+  <div style="display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.06)">
+    <button class="bt-btn-tab active" onclick="btFilterCat('all')" style="background:transparent;color:#b8b09a;border:none;padding:10px 12px;font-family:'Syne',sans-serif;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap">All</button>
+    <button class="bt-btn-tab" onclick="btFilterCat('free')" style="background:transparent;color:#b8b09a;border:none;padding:10px 12px;font-family:'Syne',sans-serif;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap">Free Thought</button>
+    <button class="bt-btn-tab" onclick="btFilterCat('topic')" style="background:transparent;color:#b8b09a;border:none;padding:10px 12px;font-family:'Syne',sans-serif;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap">Topic-Specific</button>
+    <button class="bt-btn-tab" onclick="btFilterCat('positive')" style="background:transparent;color:#b8b09a;border:none;padding:10px 12px;font-family:'Syne',sans-serif;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap">Positive Mindset</button>
+  </div>
+  <div id="coach-list"></div>
+</div>
+
+<script>
+const PBUDGET=30,PTHRESH=3000;
+const POS=[
+  {id:'gratitude',label:'Gratitude Focus',prompt:'Write about things you are grateful for today — big or small.'},
+  {id:'failure',label:'Learning from Failure',prompt:'Write about a time things went wrong and what you learned.'},
+  {id:'pride',label:'Pride in Others',prompt:'Write about someone who has made you proud and why.'},
+  {id:'problem',label:'Problem Solving',prompt:'Write about a challenge you are facing and how you might solve it.'},
+  {id:'kindness',label:'Kindness',prompt:'Write about a kind act — one you gave, received, or witnessed.'},
+  {id:'curiosity',label:'Curiosity',prompt:'Write about something that has been making you wonder or think deeply.'},
+  {id:'courage',label:'Courage + Creativity',prompt:'Write about a moment that required bravery or a creative leap.'}
+];
+let pCode='',aCat=null,aPosP=null;
+let aS=0,pS=0,ks=0,isTyp=false,started=false,ended=false;
+let aInt=null,pInt=null,idleTo=null;
+let lastActivity=Date.now(),sessionTimeout=null;
+const SESSION_TIMEOUT_MS=600000;
+
+function ft(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+function gk(c){return'ik_'+c}
+function ldS(c){try{return JSON.parse(localStorage.getItem(gk(c)))||[]}catch{return[]}}
+function svS(c,s){const a=ldS(c);a.push(s);localStorage.setItem(gk(c),JSON.stringify(a))}
+function allP(){const r={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith('ik_')){const c=k.replace('ik_','');if(c!=='COACH')try{r[c]=JSON.parse(localStorage.getItem(k))||[]}catch{}}}return r}
+
+function show(id){
+  document.querySelectorAll('.bt-screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function trackActivity(){
+  lastActivity=Date.now();
+  clearTimeout(sessionTimeout);
+  if(pCode&&pCode!=='COACH'){
+    sessionTimeout=setTimeout(()=>{
+      if(pCode){btLogout();alert('Session expired due to inactivity.');}
+    },SESSION_TIMEOUT_MS);
+  }
+}
+
+function btLogin(){
+  const c=document.getElementById('li-email').value.trim();
+  const p=document.getElementById('li-pass').value.trim();
+  if(!c||!p){document.getElementById('li-err').style.display='block';return}
+  document.getElementById('li-err').style.display='none';
+  pCode=c;
+  trackActivity();
+  if(c==='coach'&&p==='coach'){renderCoach();show('coach')}
+  else{document.getElementById('cat-code').textContent=c;btSelCat(null);show('cat')}
+}
+
+function btCoachLogin(){
+  const pin=document.getElementById('coach-pin').value.trim();
+  const err=document.getElementById('coach-err');
+  const COACH_PIN='1234';
+  if(pin!==COACH_PIN){err.style.display='block';return}
+  err.style.display='none';
+  pCode='COACH';
+  renderCoach();
+  restoreCoachdilter();
+  show('coach');
+  document.getElementById('coach-pin').value='';
+}
+function btLogout(){pCode='';document.getElementById('li-email').value='';document.getElementById('li-pass').value='';show('login')}
+function btGoHome(){if(pCode&&pCode!=='COACH'){document.getElementById('cat-code').textContent=pCode;show('cat')}else show('login')}
+function btNewSession(){btSelCat(null);show('cat')}
+
+function btSelCat(cat){
+  aCat=cat;aPosP=null;
+  ['free','topic','positive'].forEach(c=>{
+    const el=document.getElementById('cat-'+c);
+    if(!el)return;
+    el.classList.toggle('sel',c===cat);
+    const lbl=document.getElementById(c==='free'?'cfl':c==='topic'?'ctl':'cpl');
+    if(lbl)lbl.style.color=c===cat?'#f0ead6':'#b8b09a';
+  });
+  document.getElementById('topic-wrap').style.display=cat==='topic'?'block':'none';
+  document.getElementById('pos-wrap').style.display=cat==='positive'?'block':'none';
+  if(cat==='positive')renderPosList();
+  updStart();
+}
+
+function renderPosList(){
+  const el=document.getElementById('pos-list');el.innerHTML='';
+  POS.forEach(p=>{
+    const d=document.createElement('div');
+    const sel=aPosP?.id===p.id;
+    d.style.cssText=`padding:10px 14px;background:${sel?'#1a1a2a':'#13131f'};border:1px solid ${sel?'rgba(245,230,66,.35)':'rgba(255,255,255,.06)'};border-radius:5px;cursor:pointer;margin-bottom:6px`;
+    d.innerHTML=`<div style="font-size:13px;font-weight:600;color:${sel?'#C9973A':'#b8b09a'};margin-bottom:2px">${p.label}</div><div style="font-size:11px;color:rgba(240,234,214,.4)">${p.prompt}</div>`;
+    d.onclick=()=>{aPosP=p;renderPosList();updStart()};
+    el.appendChild(d);
+  });
+}
+
+function updStart(){
+  const ti=document.getElementById('topic-in');
+  const ok=aCat==='free'||(aCat==='topic'&&ti&&ti.value.trim())||(aCat==='positive'&&aPosP);
+  document.getElementById('start-btn').disabled=!ok;
+}
+document.getElementById('topic-in').addEventListener('input',updStart);
+
+function btStartSession(){
+  if(!aCat)return;
+  aS=0;pS=0;ks=0;isTyp=false;started=false;ended=false;
+  clearInterval(aInt);clearInterval(pInt);clearTimeout(idleTo);
+  const topic=document.getElementById('topic-in').value.trim();
+  const catLbl=aCat==='free'?'Free Thought':aCat==='topic'?'Topic: '+topic:aPosP?.label||'Positive Mindset';
+  document.getElementById('w-cat-label').textContent=catLbl;
+  document.getElementById('c1-disp').textContent='00:00';document.getElementById('c1-disp').style.color='#b8b09a';
+  document.getElementById('c2-disp').textContent='00:00';document.getElementById('c2-disp').style.color='#b8b09a';
+  document.getElementById('pause-bar').style.width='0%';document.getElementById('pause-bar').style.background='#C9973A';
+  document.getElementById('w-area').value='';
+  const draft=localStorage.getItem('ikbt_draft_'+pCode);
+  if(draft){document.getElementById('w-area').value=draft}
+  document.getElementById('w-chars').textContent='0 chars';
+  document.getElementById('w-status').textContent='READY';document.getElementById('w-status').style.color='rgba(240,234,214,.2)';
+  document.getElementById('sub-now').style.display='none';
+  document.getElementById('bt-gameover').classList.remove('show');
+  const pb=document.getElementById('prompt-bar');
+  if(aCat==='positive'&&aPosP){pb.style.display='block';document.getElementById('prompt-bar-txt').textContent=aPosP.prompt}
+  else pb.style.display='none';
+  document.getElementById('w-area').placeholder=aCat==='free'?'Start writing anything on your mind...':aCat==='topic'?'Write everything you know about '+topic+'...':'Begin your response...';
+  show('write');
+  setTimeout(()=>document.getElementById('w-area').focus(),100);
+}
+
+document.getElementById('w-area').addEventListener('input',function(){
+  if(ended)return;
+  if(!started){started=true;document.getElementById('sub-now').style.display=''}
+  ks++;
+  document.getElementById('w-chars').textContent=this.value.length+' chars \xb7 '+ks+' keystrokes';
+  localStorage.setItem('ikbt_draft_'+pCode,this.value);
+  if(!isTyp){
+    isTyp=true;clearInterval(pInt);
+    document.getElementById('c1-disp').style.color='#C9973A';
+    document.getElementById('w-status').textContent='WRITING';document.getElementById('w-status').style.color='#4ade80';
+    aInt=setInterval(()=>{aS++;document.getElementById('c1-disp').textContent=ft(aS)},1000);
+  }
+  clearTimeout(idleTo);
+  idleTo=setTimeout(()=>{
+    isTyp=false;clearInterval(aInt);
+    document.getElementById('c1-disp').style.color='#b8b09a';
+    document.getElementById('w-status').textContent='PAUSED';document.getElementById('w-status').style.color='rgba(240,234,214,.3)';
+    pInt=setInterval(()=>{
+      pS++;
+      document.getElementById('c2-disp').textContent=ft(pS);
+      const pct=pS/PBUDGET;
+      const col=pct>.66?'#f87171':pct>.33?'#fb923c':'#C9973A';
+      document.getElementById('pause-bar').style.width=Math.min(pct*100,100)+'%';
+      document.getElementById('pause-bar').style.background=col;
+      document.getElementById('c2-disp').style.color=col;
+      if(pS>=PBUDGET){clearInterval(pInt);triggerGO()}
+    },1000);
+  },PTHRESH);
+});
+
+function triggerGO(){
+  if(ended)return;ended=true;
+  clearInterval(aInt);clearInterval(pInt);clearTimeout(idleTo);
+  document.getElementById('bt-gameover').classList.add('show');
+  const sess=buildSess(true);svS(pCode,sess);
+  setTimeout(()=>{document.getElementById('bt-gameover').classList.remove('show');showResults(sess)},2000);
+}
+
+function btSubmitNow(){
+  if(ended)return;ended=true;
+  clearInterval(aInt);clearInterval(pInt);clearTimeout(idleTo);
+  const sess=buildSess(false);svS(pCode,sess);showResults(sess);
+}
+
+function buildSess(go){
+  const text=document.getElementById('w-area').value;
+  const aM=aS/60;
+  return{text,activeSecs:aS,pauseSecs:pS,kpm:aM>0?Math.round(ks/aM):0,xp:Math.round(aM),keystrokes:ks,gameOver:go,config:{category:aCat,topic:document.getElementById('topic-in').value.trim(),positivePrompt:aPosP}};
+}
+
+function showResults(s){
+  document.getElementById('r-kpm').textContent=s.kpm;
+  document.getElementById('r-xp').textContent=s.xp;
+  document.getElementById('r-time').textContent=ft(s.activeSecs);
+  const gb=document.getElementById('go-badge');
+  if(s.gameOver){gb.style.display='block';gb.textContent='Pause budget reached'}else gb.style.display='none';
+  document.getElementById('sub-text').textContent=s.text||'(No text written)';
+  document.getElementById('sub-wrap').style.display='none';
+  document.getElementById('sub-arrow').textContent='\u25B6';
+  document.getElementById('sub-lbl').textContent='Show Submission';
+  show('results');
+}
+
+function btToggleSub(){
+  const w=document.getElementById('sub-wrap');
+  const vis=w.style.display==='none'||w.style.display==='';
+  w.style.display=vis?'block':'none';
+  document.getElementById('sub-arrow').textContent=vis?'\u25BC':'\u25B6';
+  document.getElementById('sub-lbl').textContent=vis?'Hide Submission':'Show Submission';
+}
+
+function btShowProgress(){
+  const sessions=ldS(pCode);
+  document.getElementById('pg-code').textContent=pCode;
+  document.getElementById('pg-count').textContent=sessions.length+' session'+(sessions.length!==1?'s':'');
+  document.getElementById('pg-xp').textContent=sessions.reduce((a,s)=>a+(s.xp||0),0);
+  const kpm=sessions.length?Math.round(sessions.reduce((a,s)=>a+(s.kpm||0),0)/sessions.length):0;
+  document.getElementById('pg-kpm').textContent=kpm;
+  const kd=sessions.slice(-10);
+  if(kd.length>1){
+    document.getElementById('pg-chart-wrap').style.display='block';
+    const mx=Math.max(...kd.map(d=>d.kpm),1);
+    const pts=kd.map((d,i)=>({x:20+i*520/(kd.length-1),y:60-((d.kpm/mx)*48)}));
+    const path=pts.map((p,i)=>`${i===0?'M':'L'}${p.x},${p.y}`).join(' ');
+    document.getElementById('pg-svg').innerHTML=`<defs><linearGradient id="gl2" x1="0" x2="1"><stop offset="0%" stop-color="#C9973A"/><stop offset="100%" stop-color="#E8C547"/></linearGradient></defs><path d="${path}" fill="none" stroke="url(#gl2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${pts.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="3" fill="#C9973A"/>`).join('')}`;
+  } else document.getElementById('pg-chart-wrap').style.display='none';
+  const el=document.getElementById('pg-sessions');el.innerHTML='';
+  if(!sessions.length){el.innerHTML='<p style="color:rgba(240,234,214,.3);font-size:12px">No sessions yet.</p>';show('progress');return}
+  [...sessions].reverse().forEach((s,i)=>{
+    const idx=sessions.length-i-1;
+    const cl=s.config?.category==='free'?'Free Thought':s.config?.category==='topic'?'Topic: '+s.config.topic:s.config?.positivePrompt?.label||'Positive Mindset';
+    const d=document.createElement('div');d.className='bt-scard';
+    d.innerHTML=`<div class="bt-scard-hd" onclick="btTogSess('ps${idx}')"><div><span class="bt-pill" style="font-size:9px;padding:2px 8px">${cl}</span><span style="margin-left:8px;font-size:11px;color:#b8b09a">${ft(s.activeSecs||0)}</span></div><div style="display:flex;gap:12px;align-items:center"><span class="bt-bebas" style="font-size:16px;background:linear-gradient(90deg,#C9973A,#E8C547);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${s.kpm} KPM</span><span style="font-size:9px;color:rgba(240,234,214,.25)">&#9660;</span></div></div><div id="ps${idx}" class="bt-scard-bd"><p class="bt-mono" style="font-size:11px;line-height:1.8;color:#f0ead6;white-space:pre-wrap">${s.text||'(No text)'}</p></div>`;
+    el.appendChild(d);
+  });
+  show('progress');
+}
+
+function btTogSess(id){const e=document.getElementById(id);if(e)e.style.display=e.style.display==='block'?'none':'block'}
+
+function renderCoach(){
+  const all=allP();const ps=Object.keys(all);
+  document.getElementById('coach-count').textContent=ps.length+' player'+(ps.length!==1?'s':'')+' on record';
+  const el=document.getElementById('coach-list');el.innerHTML='';
+  if(!ps.length){el.innerHTML='<p style="color:rgba(240,234,214,.3);font-size:12px">No sessions recorded yet.</p>';return}
+  ps.forEach(p=>{
+    const pS2=all[p]||[];
+    let filtered=pS2;
+    if(coachFilt!=='all'){filtered=pS2.filter(s=>s.config?.category===coachFilt)}
+    if(!filtered.length)return;
+    const xp=filtered.reduce((a,s)=>a+(s.xp||0),0);
+    const kpm=filtered.length?Math.round(filtered.reduce((a,s)=>a+(s.kpm||0),0)/filtered.length):0;
+    const d=document.createElement('div');d.className='bt-scard';d.style.marginBottom='10px';
+    const sh=[...filtered].reverse().map((s,i)=>{
+      const idx=pS2.indexOf(s);
+      const cl=s.config?.category==='free'?'Free Thought':s.config?.category==='topic'?'Topic: '+s.config.topic:s.config?.positivePrompt?.label||'Positive Mindset';
+      return `<div style="border-bottom:1px solid rgba(255,255,255,.04)"><div onclick="btTogSess('cc${p}${idx}')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center"><span style="font-size:11px;color:rgba(240,234,214,.45)">${cl}</span><div style="display:flex;gap:12px;align-items:center"><span style="font-size:11px;color:#b8b09a">${ft(s.activeSecs||0)}</span><span class="bt-mono" style="font-size:12px;color:#C9973A">${s.kpm} kpm</span></div></div><div id="cc${p}${idx}" style="display:none;padding:10px 16px;background:#0d0d1a;max-height:150px;overflow-y:auto"><p class="bt-mono" style="font-size:11px;line-height:1.8;color:#f0ead6;white-space:pre-wrap">${s.text||'(No text)'}</p></div></div>`;
+    }).join('');
+    d.innerHTML=`<div class="bt-scard-hd" onclick="btTogSess('cp${p}')"><span class="bt-mono" style="font-size:14px;color:#f0ead6;letter-spacing:.12em">${p}</span><div style="display:flex;gap:16px;align-items:center"><div style="text-align:center"><div class="bt-bebas" style="font-size:20px;background:linear-gradient(90deg,#C9973A,#E8C547);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${xp}</div><div style="font-size:8px;color:#b8b09a;text-transform:uppercase">XP</div></div><div style="text-align:center"><div class="bt-bebas" style="font-size:20px;background:linear-gradient(90deg,#C9973A,#E8C547);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${kpm}</div><div style="font-size:8px;color:#b8b09a;text-transform:uppercase">Avg KPM</div></div><div style="text-align:center"><div class="bt-bebas" style="font-size:20px;color:#b8b09a">${filtered.length}</div><div style="font-size:8px;color:#b8b09a;text-transform:uppercase">Sessions</div></div></div></div><div id="cp${p}" style="display:none;border-top:1px solid rgba(255,255,255,.06)">${sh||'<p style="padding:12px 16px;font-size:11px;color:rgba(240,234,214,.3)">No sessions.</p>'}</div>`;
+    el.appendChild(d);
+  });
+}
+
+let coachFilt='all';
+
+function btFilterCat(cat){
+  coachFilt=cat;
+  localStorage.setItem('ikbt_coachFilt',cat);
+  document.querySelectorAll('.bt-btn-tab').forEach(b=>{b.style.borderBottomColor='transparent';b.style.color='#b8b09a'});
+  event.target.style.borderBottomColor='#C9973A';
+  event.target.style.color='#C9973A';
+  renderCoach();
+}
+
+function restoreCoachdilter(){
+  const saved=localStorage.getItem('ikbt_coachFilt')||'all';
+  coachFilt=saved;
+  document.querySelectorAll('.bt-btn-tab').forEach((b,i)=>{
+    const cats=['all','free','topic','positive'];
+    if(cats[i]===saved){b.style.borderBottomColor='#C9973A';b.style.color='#C9973A'}else{b.style.borderBottomColor='transparent';b.style.color='#b8b09a'}
+  });
+}
+
+function seedData(){
+  const students={
+    'kris@example.com':[
+      {text:'Photosynthesis is the process by which plants convert light energy into chemical energy. It occurs in two main stages: the light-dependent reactions happen in the thylakoid membranes of the chloroplasts, where light energy is captured and converted to ATP and NADPH. These energy carriers then power the light-independent reactions, also called the Calvin cycle.',activeSecs:187,pauseSecs:42,kpm:65,xp:3,keystrokes:12155,gameOver:false,config:{category:'topic',topic:'Photosynthesis',positivePrompt:null}},
+      {text:'Today I felt really focused during my writing session. I managed to stay present and not get distracted. The flow of thoughts came naturally and I was able to articulate complex ideas clearly.',activeSecs:245,pauseSecs:120,kpm:58,xp:4,keystrokes:14210,gameOver:false,config:{category:'free',topic:'',positivePrompt:null}},
+      {text:'Three things I did well: First, I organized my study materials which saved time. Second, I helped a classmate understand the math problem. Third, I finished my essay outline early, giving me more time to draft.',activeSecs:156,pauseSecs:89,kpm:72,xp:3,keystrokes:11232,gameOver:true,config:{category:'positive',topic:'',positivePrompt:{id:'prime',label:'3 Things I Did Well',prompt:'What are three things I did well today, and why?'}}}
+    ],
+    'rubio@example.com':[
+      {text:'The theme of ambition appears throughout the entire novel. From the beginning, we see characters driven by desire for power, recognition, and control. This drives the central conflict and ultimately leads to the downfall of the protagonist.',activeSecs:312,pauseSecs:0,kpm:71,xp:5,keystrokes:22152,gameOver:false,config:{category:'topic',topic:'Literary Analysis - Ambition',positivePrompt:null}},
+      {text:'I am grateful for three things this week. First, I have a supportive family that encourages my goals. Second, I have access to great teachers and resources. Third, I have friends who make me laugh and keep me grounded.',activeSecs:198,pauseSecs:256,kpm:64,xp:3,keystrokes:12672,gameOver:true,config:{category:'positive',topic:'',positivePrompt:{id:'grat',label:'Gratitude Focus',prompt:'Write about things you are grateful for today — big or small.'}}}
+    ],
+    'emma@example.com':[
+      {text:'Just writing whatever comes to mind. Started thinking about my cello practice. I played Bach suite and it felt smooth. Sometimes when I practice I feel like I am in conversation with the composer, like they are speaking through the notes. That is when it feels most real.',activeSecs:224,pauseSecs:78,kpm:61,xp:4,keystrokes:13664,gameOver:false,config:{category:'free',topic:'',positivePrompt:null}},
+      {text:'One kind act I witnessed was my friend staying after school to help someone struggling with their locker. They did not know each other but my friend spent time patiently trying combinations. That simple act of kindness stuck with me.',activeSecs:167,pauseSecs:45,kpm:69,xp:3,keystrokes:11523,gameOver:false,config:{category:'positive',topic:'',positivePrompt:{id:'kind',label:'Kindness',prompt:'Write about a kind act — one you gave, received, or witnessed.'}}}
+    ]
+  };
+  Object.entries(students).forEach(([em,ss])=>{localStorage.setItem('ik_'+em,JSON.stringify(ss))});
+}
+
+// DEV ONLY: seedData() populates test data. Commented out for production.
+// To use test data in development: uncomment the line below or run seedData() in browser console
+// seedData();
+
+document.addEventListener('click',trackActivity);
+document.addEventListener('keydown',trackActivity);
+</script>
+</body>
+</html>
