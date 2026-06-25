@@ -920,9 +920,12 @@ function renderCoachGrid() {
   el.innerHTML = filtered.map(p => {
     const xp = (p.active_xp||0)+(p.passive_xp||0);
     const keys = ["bronze","silver","gold","master"].filter(k=>(p.milestones||[]).includes(k));
+    const certSent = (p.milestones||[]).includes("cert_sent");
+    const show50 = xp >= 50;
     return `<div class="player-card ${STATE.selPlayer?.email===p.email?'act':''}" onclick="selectCoachPlayer('${p.email}')">
       <div style="font-family:JetBrains Mono,monospace;font-size:11px;color:#D4A843;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.email}</div>
       <div style="font-size:11px;color:rgba(237,232,216,.3);">${xp} XP · ${p.session_count||0} sessions</div>
+      ${show50 ? `<div style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(78,255,145,.08);border:1px solid rgba(78,255,145,.25);border-radius:20px;font-size:9px;font-weight:700;color:#4eff91;letter-spacing:.08em;">🎖️ 50 XP${certSent?' · Sent':''}</div>` : ''}
       <div style="display:flex;gap:3px;margin-top:6px;">${keys.map(k=>keyIconSVG(KEY_COLORS[k],14)).join("")}</div>
     </div>`;
   }).join("");
@@ -961,6 +964,20 @@ function renderCoachDetail() {
       ${kpms.length > 1 ? `
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:6px;">KPM Trend</div>
       <div class="chart-bars" style="height:48px;margin-bottom:12px;">${[...kpms].reverse().map(k=>`<div class="chart-bar" style="height:${Math.max(4,(k/mx)*44)}px;background:linear-gradient(0deg,#a259ff,#c084fc);"></div>`).join("")}</div>` : ""}
+      ${txp >= 50 ? `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(78,255,145,.05);border:1px solid rgba(78,255,145,.2);border-radius:10px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:18px;">🎖️</span>
+          <div>
+            <div style="font-size:11px;font-weight:700;color:#4eff91;letter-spacing:.1em;text-transform:uppercase;">50 XP Milestone</div>
+            <div style="font-size:10px;color:rgba(237,232,216,.35);margin-top:1px;">Qualifies for free personalised session</div>
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="event.stopPropagation()">
+          <input type="checkbox" id="cert-sent-cb" ${(p.milestones||[]).includes("cert_sent") ? "checked" : ""} onchange="toggleCertSent('${p.email}', this.checked)" style="width:16px;height:16px;accent-color:#4eff91;cursor:pointer;">
+          <span style="font-size:11px;font-weight:600;color:rgba(237,232,216,.55);">Certificate Sent</span>
+        </label>
+      </div>` : ""}
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:10px;">Sessions — newest first</div>
       ${!sessions.length ? '<div class="empty" style="padding:20px 0;">No sessions yet.</div>' :
         sessions.map((s,i)=>`
@@ -973,30 +990,4 @@ function renderCoachDetail() {
                   background:${s.outcome==="won"?"rgba(78,255,145,.1)":"rgba(255,85,85,.1)"};
                   color:${s.outcome==="won"?"#4eff91":"#ff5555"};
                   border:1px solid ${s.outcome==="won"?"rgba(78,255,145,.25)":"rgba(255,85,85,.2)"};">
-                  ${s.outcome==="won"?"Submitted":"Timed Out"}</span>
-              </div>
-              <div style="font-size:10px;color:rgba(237,232,216,.25);">
-                ${new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · Active: ${fmt(s.c1Seconds||0)} · ${s.keystrokes||0} keystrokes
-              </div>
-            </div>
-            <div style="display:flex;gap:12px;">
-              <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#D4A843;line-height:1;">${s.kpm}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>
-              <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#4eff91;line-height:1;">+${s.xp}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>
-            </div>
-          </div>
-          <div class="sess-body" id="csb-${i}" style="display:none;">${s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>"}</div>
-        </div>`).join("")}
-    </div>`;
-}
-async function coachRefresh() {
-  const btn = document.getElementById("coach-refresh-btn");
-  btn.textContent = "Loading…"; btn.disabled = true;
-  STATE.allPlayers = await loadAllPlayers();
-  STATE.selPlayer = null;
-  document.getElementById("coach-detail").innerHTML = "";
-  renderCoach();
-  btn.textContent = "↻ Refresh"; btn.disabled = false;
-}
-</script>
-</body>
-</html>
+          
