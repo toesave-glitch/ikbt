@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infinity Key Brain Trainer</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-height:100vh;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-thumb{background:rgba(212,168,67,0.3);border-radius:2px;}
+
+.page{display:none;min-height:100vh;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;position:relative;}
+.page.top{justify-content:flex-start;padding-top:32px;}
+.page.active{display:flex;}
+
+.bg-glow{position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse at 20% 50%,rgba(212,168,67,.04) 0%,transparent 60%),
+             radial-gradient(ellipse at 80% 20%,rgba(162,89,255,.03) 0%,transparent 50%);}
+.bg-inf{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:500px;line-height:1;color:#D4A843;font-family:'Cormorant Garamond',serif;
+  opacity:.025;pointer-events:none;z-index:0;user-select:none;}
+
+.wrap{position:relative;z-index:1;width:100%;max-width:520px;}
+.wrap.wide{max-width:720px;}
+.wrap.full{max-width:760px;}
+
+.logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.3em;
+  text-transform:uppercase;color:rgba(212,168,67,.6);margin-bottom:32px;text-align:center;}
+.logo b{color:#D4A843;}
+
+.display{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:700;
+  line-height:1;letter-spacing:-1px;
+  background:linear-gradient(135deg,#F5D680 0%,#D4A843 50%,#B8860B 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.sub{color:rgba(237,232,216,.35);font-size:12px;text-transform:uppercase;letter-spacing:.15em;margin-bottom:32px;}
+
+.field{width:100%;padding:14px 18px;background:rgba(212,168,67,.04);
+  border:1px solid rgba(212,168,67,.2);border-radius:8px;color:#EDE8D8;
+  font-size:16px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;transition:border-color .2s;}
+.field:focus{border-color:rgba(212,168,67,.6);}
+.field::placeholder{color:rgba(237,232,216,.2);}
+
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#D4A843,#B8860B);
+  border:none;border-radius:8px;color:#05050a;font-size:13px;font-family:'DM Sans',sans-serif;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:opacity .2s;}
+.btn:hover:not(:disabled){opacity:.88;}
+.btn:disabled{opacity:.3;cursor:default;}
+.btn-ghost{width:100%;padding:12px;background:transparent;border:1px solid rgba(237,232,216,.1);
+  border-radius:8px;color:rgba(237,232,216,.35);font-size:12px;font-family:'DM Sans',sans-serif;
+  font-weight:500;letter-spacing:.08em;cursor:pointer;margin-top:10px;text-transform:uppercase;transition:all .2s;}
+.btn-ghost:hover{border-color:rgba(212,168,67,.3);color:rgba(237,232,216,.7);}
+.btn-green{width:100%;margin-top:10px;padding:13px;
+  background:linear-gradient(135deg,rgba(78,255,145,.15),rgba(0,200,130,.1));
+  border:1px solid rgba(78,255,145,.4);border-radius:8px;color:#4eff91;font-size:13px;
+  font-family:'DM Sans',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;}
+.btn-green:hover{background:rgba(78,255,145,.2);}
+
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(212,168,67,.2),transparent);margin:20px 0;}
+
+.card{background:rgba(255,255,255,.03);border:1px solid rgba(212,168,67,.1);border-radius:12px;
+  padding:18px 20px;cursor:pointer;margin-bottom:10px;transition:all .15s;display:flex;align-items:center;gap:16px;}
+.card:hover{background:rgba(212,168,67,.05);border-color:rgba(212,168,67,.25);}
+.card.sel{background:rgba(212,168,67,.07);border-color:rgba(212,168,67,.5);}
+
+.prompt-opt{padding:14px 16px;background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);
+  border-radius:10px;cursor:pointer;margin-bottom:8px;transition:all .15s;display:flex;gap:12px;align-items:flex-start;}
+.prompt-opt:hover{background:rgba(212,168,67,.05);}
+.prompt-opt.sel{background:rgba(212,168,67,.07);border-color:rgba(212,168,67,.45);}
+
+.status-badge{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:1px solid;}
+.s-idle  {background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:rgba(237,232,216,.3);}
+.s-typing{background:rgba(78,255,145,.08);border-color:rgba(78,255,145,.35);color:#4eff91;}
+.s-paused{background:rgba(255,107,74,.1);border-color:rgba(255,107,74,.35);color:#ff6b4a;}
+.s-won   {background:rgba(212,168,67,.1);border-color:rgba(212,168,67,.4);color:#D4A843;}
+.s-lost  {background:rgba(255,60,60,.1);border-color:rgba(255,60,60,.3);color:#ff5555;}
+
+.clocks{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.clock-box{background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);border-radius:12px;padding:18px;transition:all .25s;}
+.clock-box.danger{background:rgba(255,107,74,.05);border-color:rgba(255,107,74,.25);}
+.clock-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:rgba(237,232,216,.3);margin-bottom:8px;display:flex;justify-content:space-between;}
+.clock-num{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:700;letter-spacing:2px;line-height:1;}
+.cn-gold{color:#D4A843;}.cn-dim{color:rgba(237,232,216,.15);}.cn-red{color:#ff6b4a;}
+.bar{height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:10px;}
+.bar-fill{height:100%;border-radius:2px;transition:width .1s linear;}
+
+.prompt-banner{padding:11px 16px;background:rgba(212,168,67,.04);border:1px solid rgba(212,168,67,.15);
+  border-radius:8px;font-size:13px;color:rgba(237,232,216,.5);font-style:italic;margin-bottom:12px;
+  font-family:'Cormorant Garamond',serif;}
+
+.textarea{width:100%;height:320px;background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);
+  border-radius:12px;padding:22px;color:#EDE8D8;font-size:15px;font-family:'JetBrains Mono',monospace;
+  line-height:1.8;resize:none;outline:none;caret-color:#D4A843;}
+.textarea:focus{border-color:rgba(212,168,67,.25);}
+.textarea::placeholder{color:rgba(237,232,216,.1);font-style:italic;}
+.textarea:disabled{color:rgba(237,232,216,.25);}
+
+.ta-wrap{position:relative;}
+.ta-overlay{position:absolute;inset:0;background:rgba(5,5,10,.9);border-radius:12px;
+  display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.ta-overlay.show{display:flex;}
+
+.statsbar{display:flex;align-items:center;gap:20px;margin-top:12px;padding:12px 18px;
+  background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.08);border-radius:10px;}
+.stat-n{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#D4A843;line-height:1;}
+.stat-l{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-top:2px;}
+.stat-hint{font-size:12px;color:rgba(237,232,216,.2);font-style:italic;margin-left:auto;}
+
+.scorecard{background:linear-gradient(135deg,#0a0a12,#0f0f1a);border:1px solid rgba(212,168,67,.3);
+  border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;}
+.score-big{font-family:'Cormorant Garamond',serif;font-size:80px;font-weight:700;line-height:1;
+  background:linear-gradient(135deg,#F5D680,#D4A843);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.score-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.2em;color:rgba(237,232,216,.3);margin-top:4px;}
+.score-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+.xp-pill{display:inline-flex;gap:6px;padding:5px 14px;background:rgba(212,168,67,.1);border-radius:20px;font-size:13px;font-weight:700;color:#D4A843;}
+.key-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid;}
+
+.sess-item{padding:14px 16px;background:rgba(255,255,255,.025);border-radius:10px;margin-bottom:6px;
+  cursor:pointer;border:1px solid transparent;transition:background .15s;}
+.sess-item:hover{background:rgba(212,168,67,.05);}
+.sess-item.open{border-color:rgba(212,168,67,.15);}
+.sess-body{margin-top:12px;padding:14px;background:rgba(0,0,0,.3);border-radius:8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:rgba(237,232,216,.55);
+  white-space:pre-wrap;max-height:200px;overflow-y:auto;border:1px solid rgba(212,168,67,.08);display:none;}
+
+.progress-bar-wrap{background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.08);border-radius:10px;padding:14px 16px;margin-bottom:16px;}
+.chart-bars{display:flex;align-items:flex-end;gap:5px;height:80px;}
+.chart-bar{flex:1;border-radius:3px 3px 0 0;min-width:6px;background:linear-gradient(0deg,#D4A843,#F5D680);}
+
+.coach-badge{padding:4px 12px;background:rgba(162,89,255,.12);border:1px solid rgba(162,89,255,.3);
+  border-radius:20px;font-size:10px;font-weight:700;color:#c084fc;letter-spacing:.1em;text-transform:uppercase;}
+.player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px;}
+.player-card{padding:16px;background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);border-radius:10px;cursor:pointer;transition:all .15s;}
+.player-card:hover{background:rgba(212,168,67,.05);}
+.player-card.act{border-color:rgba(162,89,255,.4);background:rgba(162,89,255,.05);}
+.coach-ses{padding:12px 14px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid transparent;}
+.coach-ses:hover{background:rgba(0,0,0,.35);}
+.coach-ses.open{border-color:rgba(162,89,255,.2);}
+.si{width:100%;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(237,232,216,.08);border-radius:8px;color:#EDE8D8;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:14px;}
+.si::placeholder{color:rgba(237,232,216,.2);}
+.si:focus{border-color:rgba(162,89,255,.3);}
+.rfbtn{background:transparent;border:1px solid rgba(237,232,216,.1);border-radius:6px;padding:6px 12px;color:rgba(237,232,216,.35);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.rfbtn:hover{border-color:rgba(212,168,67,.3);color:rgba(237,232,216,.7);}
+
+.empty{text-align:center;color:rgba(237,232,216,.2);padding:40px 0;font-size:14px;font-style:italic;}
+.err-txt{color:#ff6b4a;font-size:12px;margin-top:8px;text-align:center;display:none;}
+
+/* Milestone modal */
+.modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+  background:rgba(5,5,10,.95);padding:24px;}
+.modal.show{display:flex;}
+.modal-box{background:#0a0a12;border-radius:20px;padding:48px 40px;max-width:480px;width:100%;text-align:center;
+  border:1px solid rgba(212,168,67,.2);position:relative;overflow:hidden;}
+.modal-box::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 0%,rgba(212,168,67,.08) 0%,transparent 60%);pointer-events:none;}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;margin-bottom:12px;}
+.modal-msg{color:rgba(237,232,216,.5);font-size:14px;line-height:1.6;margin-bottom:28px;}
+.cert-box{border:1px solid rgba(212,168,67,.3);border-radius:12px;padding:24px;margin-bottom:24px;background:rgba(212,168,67,.04);}
+.cert-pw{font-family:'JetBrains Mono',monospace;font-size:22px;color:#D4A843;letter-spacing:.2em;
+  background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:8px;
+  padding:10px 20px;display:inline-block;margin:12px 0;}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="bg-inf">∞</div>
+
+<!-- MILESTONE MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div id="modal-icon" style="margin:0 auto 24px;display:flex;align-items:center;justify-content:center;"></div>
+    <div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:rgba(237,232,216,.3);margin-bottom:8px;">Achievement Unlocked</div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="cert-box" id="modal-cert" style="display:none;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:#D4A843;margin-bottom:6px;">Certificate of Achievement</div>
+      <div style="font-size:12px;color:rgba(237,232,216,.4);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;">Present this password to unlock your free session</div>
+      <div class="cert-pw">IK Rocks</div>
+      <a href="https://www.infinitykey.rocks/book-online" target="_blank"
+        style="display:block;font-size:12px;color:rgba(212,168,67,.6);text-decoration:underline;">Book your free session → infinitykey.rocks/book-online</a>
+    </div>
+    <button class="btn" id="modal-btn" onclick="dismissMilestone()">Continue →</button>
+  </div>
+</div>
+
+<!-- COACH PIN -->
+<div class="page" id="p-coach-pin">
+  <div class="wrap">
+    <div class="logo">∞ <b>Infinity Key</b> ∞</div>
+    <div class="display" style="font-size:40px;">Coach Access</div>
+    <div class="sub">Enter your PIN to continue</div>
+    <input class="field" id="coach-pin-input" type="password" placeholder="PIN"
+      onkeydown="if(event.key==='Enter')doCoachPin()">
+    <div class="err-txt" id="coach-pin-err" style="display:none;">Incorrect PIN. Try again.</div>
+    <button class="btn" onclick="doCoachPin()">Enter Dashboard →</button>
+    <button class="btn-ghost" onclick="show('p-login')">← Back</button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div class="page active" id="p-login">
+  <div class="wrap">
+    <div class="logo">∞ <b>Infinity Key</b> ∞</div>
+    <div class="display">Brain Trainer</div>
+    <div class="sub">Enter your email to begin</div>
+    <input class="field" id="login-email" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="err-txt" id="login-err">Please enter a valid email address.</div>
+    <button class="btn" id="login-btn" onclick="doLogin()">Begin Training →</button>
+    <div class="divider"></div>
+    <div style="text-align:center;font-size:12px;color:rgba(237,232,216,.2);">
+      Earn <span style="color:#D4A843;font-weight:700;">50 XP</span> to unlock a free personalised training session
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORY -->
+<div class="page" id="p-category">
+  <div class="wrap">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;">
+      <div>
+        <div class="logo" style="text-align:left;margin-bottom:6px;">∞ Infinity Key</div>
+        <div class="display" style="font-size:36px;">Brain Trainer</div>
+        <div id="cat-email" style="color:rgba(237,232,216,.3);font-size:11px;font-family:JetBrains Mono,monospace;"></div>
+      </div>
+      <div style="text-align:right;">
+        <div id="cat-xp" style="display:none;" class="xp-pill">0 XP</div>
+        <div id="cat-keys" style="display:flex;gap:4px;margin-top:8px;justify-content:flex-end;"></div>
+      </div>
+    </div>
+    <div class="card" id="cat-free" onclick="selectCat('freeThought')">
+      <span style="font-size:24px;">💭</span>
+      <div><div style="font-weight:600;font-size:15px;margin-bottom:2px;">Free Thought</div>
+      <div style="color:rgba(237,232,216,.35);font-size:12px;">Write whatever's on your mind.</div></div>
+    </div>
+    <div class="card" id="cat-topic" onclick="selectCat('topicSpecific')">
+      <span style="font-size:24px;">📚</span>
+      <div><div style="font-weight:600;font-size:15px;margin-bottom:2px;">Topic-Specific</div>
+      <div style="color:rgba(237,232,216,.35);font-size:12px;">Focus on a subject or idea.</div></div>
+    </div>
+    <div class="card" id="cat-positive" onclick="selectCat('positiveMindset')">
+      <span style="font-size:24px;">✨</span>
+      <div><div style="font-weight:600;font-size:15px;margin-bottom:2px;">Positive Mindset</div>
+      <div style="color:rgba(237,232,216,.35);font-size:12px;">Reflect with guided prompts.</div></div>
+    </div>
+    <button class="btn" id="cat-btn" style="margin-top:8px;" disabled onclick="catContinue()">Continue →</button>
+    <button class="btn-ghost" onclick="show('p-progress')">View My Progress</button>
+    <button class="btn-ghost" style="margin-top:6px;color:rgba(237,232,216,.15);" onclick="doLogout()">← Sign Out</button>
+  </div>
+</div>
+
+<!-- TOPIC INPUT -->
+<div class="page" id="p-topic">
+  <div class="wrap">
+    <div class="logo" style="text-align:left;margin-bottom:12px;">∞ Brain Trainer</div>
+    <div class="display" style="font-size:36px;">What's the Topic?</div>
+    <div class="sub">A subject, class, or idea</div>
+    <input class="field" id="topic-input" placeholder="e.g. The Book Thief, History, Climate Change…"
+      oninput="document.getElementById('topic-btn').disabled=!this.value.trim()"
+      onkeydown="if(event.key==='Enter'&&this.value.trim())startWriting(this.value.trim())">
+    <button class="btn" id="topic-btn" disabled onclick="startWriting(document.getElementById('topic-input').value.trim())">Start Writing →</button>
+    <button class="btn-ghost" onclick="show('p-category')">← Back</button>
+  </div>
+</div>
+
+<!-- PROMPT PICKER -->
+<div class="page" id="p-prompt">
+  <div class="wrap">
+    <div class="logo" style="text-align:left;margin-bottom:12px;">∞ Brain Trainer</div>
+    <div class="display" style="font-size:36px;">Choose a Prompt</div>
+    <div class="sub">What's on your mind this week?</div>
+    <div id="prompt-list"></div>
+    <button class="btn" id="prompt-btn" style="margin-top:12px;" disabled onclick="startWritingPrompt()">Start Writing →</button>
+    <button class="btn-ghost" onclick="show('p-category')">← Back</button>
+  </div>
+</div>
+
+<!-- WRITING -->
+<div class="page top" id="p-writing">
+  <div class="wrap full">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button onclick="goHome()"
+          style="background:transparent;border:1px solid rgba(212,168,67,.2);border-radius:6px;padding:6px 10px;color:rgba(212,168,67,.5);font-size:16px;cursor:pointer;line-height:1;">⌂</button>
+        <div>
+          <div id="w-topic" style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;"></div>
+          <div id="w-email" style="color:rgba(237,232,216,.25);font-size:10px;font-family:JetBrains Mono,monospace;margin-top:2px;"></div>
+        </div>
+      </div>
+      <div class="status-badge s-idle" id="w-status">Ready</div>
+    </div>
+
+    <div class="clocks">
+      <div class="clock-box">
+        <div class="clock-lbl"><span>Active Time ⏱</span><span>Keep going</span></div>
+        <div class="clock-num cn-gold" id="c1-disp">0:00</div>
+        <div class="bar"><div class="bar-fill" id="c1-bar" style="width:0%;background:linear-gradient(90deg,#D4A843,#4eff91);"></div></div>
+      </div>
+      <div class="clock-box" id="c2-box">
+        <div class="clock-lbl"><span>Pause Budget ⚠️</span><span>30s total</span></div>
+        <div class="clock-num cn-dim" id="c2-disp">0:00</div>
+        <div class="bar"><div class="bar-fill" id="c2-bar" style="width:0%;background:#D4A843;"></div></div>
+      </div>
+    </div>
+
+    <div id="w-prompt-banner" class="prompt-banner" style="display:none;"></div>
+
+    <div class="ta-wrap">
+      <textarea class="textarea" id="w-area" placeholder="Begin typing to start your session… the clock follows your words."></textarea>
+      <div class="ta-overlay" id="w-overlay">
+        <div id="w-overlay-icon"></div>
+        <div id="w-overlay-txt" style="font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;letter-spacing:2px;"></div>
+        <div style="font-size:12px;color:rgba(237,232,216,.35);">Saving your session…</div>
+      </div>
+    </div>
+
+    <button class="btn-green" id="w-submit" style="display:none;" onclick="submitNow()">Submit Now ✓</button>
+
+    <div class="statsbar">
+      <div style="text-align:center;"><div class="stat-n" id="w-ks">0</div><div class="stat-l">Keystrokes</div></div>
+      <div style="text-align:center;"><div class="stat-n" id="w-kpm">—</div><div class="stat-l">KPM</div></div>
+      <div style="text-align:center;"><div class="stat-n" style="color:#4eff91;" id="w-xp">+1</div><div class="stat-l">XP so far</div></div>
+      <div class="stat-hint" id="w-hint">Type to start the clock ↑</div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="page" id="p-results">
+  <div class="wrap">
+    <div class="logo" style="text-align:center;">∞ Infinity Key</div>
+    <div class="scorecard">
+      <div id="r-outcome" style="font-size:11px;text-transform:uppercase;letter-spacing:.2em;color:rgba(237,232,216,.3);margin-bottom:12px;">Session Complete</div>
+      <div class="score-big" id="r-kpm">0</div>
+      <div class="score-lbl">Keystrokes per Minute</div>
+      <div class="divider"></div>
+      <div class="score-grid">
+        <div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#4eff91;" id="r-xp">+0</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.28);margin-top:2px;">XP Earned</div></div>
+        <div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#D4A843;" id="r-time">0:00</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.28);margin-top:2px;">Active Time</div></div>
+        <div><div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:rgba(237,232,216,.7);" id="r-total">0</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.28);margin-top:2px;">Total XP</div></div>
+      </div>
+      <div style="margin-top:16px;font-size:11px;color:rgba(237,232,216,.2);font-style:italic;">Screenshot this card to share your progress 📸</div>
+    </div>
+    <div id="r-keys" style="margin-bottom:16px;display:none;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:rgba(237,232,216,.25);margin-bottom:8px;">Keys Collected</div>
+      <div id="r-keys-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+    <button class="btn" onclick="goHome()">⌂ Home</button>
+    <button class="btn-ghost" onclick="show('p-progress')">View Progress</button>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="page top" id="p-progress">
+  <div class="wrap wide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <div>
+        <div class="logo" style="text-align:left;margin-bottom:6px;">∞ Infinity Key</div>
+        <div class="display" style="font-size:32px;">My Progress</div>
+        <div id="pg-email" style="color:rgba(237,232,216,.25);font-size:11px;font-family:JetBrains Mono,monospace;"></div>
+      </div>
+      <button class="btn" style="width:auto;padding:10px 20px;" onclick="goHome()">⌂ Home</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;" id="pg-stats"></div>
+    <div id="pg-keys-wrap" style="display:none;margin-bottom:16px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:rgba(237,232,216,.25);margin-bottom:8px;">Keys Earned</div>
+      <div id="pg-keys-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:rgba(237,232,216,.25);margin-bottom:10px;">Progress to Gold Key</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span id="pg-xp-now" style="font-size:12px;color:rgba(237,232,216,.4);">0 XP</span>
+        <span style="font-size:12px;color:rgba(212,168,67,.6);">50 XP</span>
+      </div>
+      <div class="bar" style="height:4px;"><div class="bar-fill" id="pg-gold-bar" style="width:0%;background:linear-gradient(90deg,#D4A843,#FFD700);"></div></div>
+      <div id="pg-gold-msg" style="display:none;margin-top:8px;font-size:12px;color:#FFD700;text-align:center;"></div>
+    </div>
+    <div id="pg-chart-wrap" style="background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.08);border-radius:10px;padding:18px;margin-bottom:14px;display:none;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:14px;">KPM Over Time</div>
+      <div class="chart-bars" id="pg-chart"></div>
+    </div>
+    <div id="pg-sessions"></div>
+  </div>
+</div>
+
+<!-- COACH -->
+<div class="page top" id="p-coach">
+  <div class="wrap wide" style="max-width:860px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(212,168,67,.1);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="logo" style="margin-bottom:0;">∞ Infinity Key</div>
+        <div class="coach-badge">Coach</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button class="rfbtn" id="coach-refresh-btn" onclick="coachRefresh()">↻ Refresh</button>
+        <button class="btn-ghost" style="width:auto;padding:8px 16px;margin-top:0;" onclick="doLogout()">← Exit</button>
+      </div>
+    </div>
+    <div id="coach-count" style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:rgba(237,232,216,.25);margin-bottom:8px;">Players — 0 on record</div>
+    <input class="si" placeholder="Search by email…" oninput="filterCoach(this.value)">
+    <div class="player-grid" id="coach-grid"></div>
+    <div id="coach-detail"></div>
+  </div>
+</div>
+
+<script>
+// ── Supabase ──────────────────────────────────────────────────
+const sb = supabase.createClient(
+  "https://pcgbaqueqqvxoyzmcpgu.supabase.co",
+  "sb_publishable_wAVDWQ8avH5OQuulmFw3UQ_wPB9W__C"
+);
+
+// ── Storage ───────────────────────────────────────────────────
+async function loadPlayer(email) {
+  try {
+    const { data } = await sb.from("players").select("*").eq("email", email.toLowerCase().trim()).maybeSingle();
+    if (data) return { ...data, milestones: data.milestones || [] };
+  } catch {}
+  return { email: email.toLowerCase().trim(), active_xp: 0, passive_xp: 0, milestones: [], session_count: 0 };
+}
+async function savePlayer(p) {
+  try {
+    await sb.from("players").upsert(
+      { email: p.email, active_xp: p.active_xp, passive_xp: p.passive_xp, milestones: p.milestones || [], session_count: p.session_count },
+      { onConflict: "email" }
+    );
+  } catch(e) { console.error("savePlayer:", e); }
+}
+async function loadSessions(email) {
+  try {
+    const { data } = await sb.from("sessions").select("*").eq("email", email.toLowerCase().trim()).order("created_at", { ascending: false });
+    return (data || []).map(s => ({ ...s, c1Seconds: s.c1_seconds, c2Seconds: s.c2_seconds }));
+  } catch { return []; }
+}
+async function saveSession(email, s) {
+  try {
+    await sb.from("sessions").insert({
+      email: email.toLowerCase().trim(), created_at: s.created_at,
+      category: s.category, topic: s.topic,
+      c1_seconds: s.c1Seconds, c2_seconds: s.c2Seconds,
+      keystrokes: s.keystrokes, kpm: s.kpm, xp: s.xp, outcome: s.outcome, text: s.text,
+    });
+  } catch(e) { console.error("saveSession:", e); }
+}
+async function ensurePlayer(email) {
+  try { await sb.from("players").upsert({ email: email.toLowerCase().trim() }, { onConflict: "email", ignoreDuplicates: true }); } catch {}
+}
+async function loadAllPlayers() {
+  try { const { data } = await sb.from("players").select("*"); return data || []; } catch { return []; }
+}
+
+// ── Milestones ────────────────────────────────────────────────
+const MILESTONES = [
+  { id:"first",  xp:0,   label:"First Step",    color:"#D4A843", msg:"You've taken your first step. The journey begins now.", cert:false },
+  { id:"bronze", xp:10,  label:"Bronze Key",    color:"#CD7F32", msg:"You're building the habit. Something is unlocking inside you.", cert:false },
+  { id:"silver", xp:25,  label:"Silver Key",    color:"#C0C0C0", msg:"You're finding your rhythm. The words are coming faster now.", cert:false },
+  { id:"gold",   xp:50,  label:"Gold Key",      color:"#FFD700", msg:"You've earned a free personalised training session with Coach Stew.", cert:true },
+  { id:"master", xp:100, label:"Brain Trainer", color:"#a259ff", msg:"You have mastered the first XP. The next door awaits.", cert:false },
+];
+const KEY_COLORS = { bronze:"#CD7F32", silver:"#C0C0C0", gold:"#FFD700", master:"#a259ff" };
+
+function checkMilestones(oldXP, newXP, earned, isFirst) {
+  const out = [];
+  if (isFirst && !earned.includes("first")) out.push(MILESTONES[0]);
+  for (const m of MILESTONES.slice(1)) {
+    if (oldXP < m.xp && newXP >= m.xp && !earned.includes(m.id)) out.push(m);
+  }
+  return out;
+}
+
+function keyIconSVG(color, size=64) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="26" r="13" stroke="${color}" stroke-width="3.5" fill="none"/>
+    <circle cx="22" cy="26" r="5" fill="${color}" opacity="0.25"/>
+    <path d="M32 34 L56 48" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M46 42 L46 50" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M52 45 L52 53" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
+  </svg>`;
+}
+
+// ── Milestone queue ───────────────────────────────────────────
+let milestoneQueue = [];
+function showMilestone(m) {
+  document.getElementById("modal-icon").innerHTML = keyIconSVG(m.color, 80);
+  document.getElementById("modal-title").style.color = m.color;
+  document.getElementById("modal-title").textContent = m.label;
+  document.getElementById("modal-msg").textContent = m.msg;
+  document.getElementById("modal-cert").style.display = m.cert ? "block" : "none";
+  document.getElementById("modal-btn").textContent = milestoneQueue.length > 1 ? "Next →" : "Continue →";
+  document.getElementById("modal").classList.add("show");
+}
+function dismissMilestone() {
+  milestoneQueue.shift();
+  document.getElementById("modal").classList.remove("show");
+  if (milestoneQueue.length > 0) {
+    setTimeout(() => showMilestone(milestoneQueue[0]), 200);
+  } else {
+    setTimeout(() => show("p-results"), 200);
+  }
+}
+
+// ── State ─────────────────────────────────────────────────────
+let STATE = {
+  email: "", player: null, sessions: [],
+  category: null, selPrompt: null,
+  // writing
+  c1: 0, c2: 0, ks: 0, gameState: "idle",
+  lastKey: null, done: false, iv: null,
+  writingTopic: "", writingText: "",
+  lastSession: null,
+  // coach
+  allPlayers: [], coachFilter: "", selPlayer: null, coachSessions: [],
+};
+
+const C2_LIMIT = 30;
+const GAP_MS   = 3000;
+const TICK_MS  = 100;
+
+const PROMPTS = [
+  { icon:"🌞", title:"Gratitude Focus",       q:"What was the best part of your week?" },
+  { icon:"❌", title:"Learning from Failure",  q:"What mistake did you learn from this week?" },
+  { icon:"🌟", title:"Pride in Others",        q:"Who were you proud of this week—and why?" },
+  { icon:"🔧", title:"Problem Solving",        q:"What's one thing you could've improved this week?" },
+  { icon:"💛", title:"Kindness",               q:"Who did you help this week?" },
+  { icon:"🧠", title:"Curiosity",              q:"What was the most interesting thing you learned this week?" },
+  { icon:"🚀", title:"Courage + Creativity",  q:"What's something new you want to try next week?" },
+];
+
+// ── Navigation ────────────────────────────────────────────────
+function show(pageId) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(pageId).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function fmt(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
+
+// ── Login ─────────────────────────────────────────────────────
+async function doLogin() {
+  const raw = document.getElementById("login-email").value.trim();
+  const err = document.getElementById("login-err");
+  const btn = document.getElementById("login-btn");
+  if (!raw) return;
+  err.style.display = "none";
+  btn.disabled = true; btn.textContent = "Opening…";
+  try {
+    if (raw.toLowerCase() === "coach") {
+      document.getElementById("coach-pin-input").value = "";
+      document.getElementById("coach-pin-err").style.display = "none";
+      show("p-coach-pin");
+      setTimeout(() => document.getElementById("coach-pin-input").focus(), 80);
+      btn.disabled = false; btn.textContent = "Begin Training →";
+      return;
+    }
+    if (!raw.includes("@")) { err.style.display = "block"; btn.disabled = false; btn.textContent = "Begin Training →"; return; }
+    STATE.email = raw.toLowerCase().trim();
+    STATE.player = await loadPlayer(STATE.email);
+    STATE.sessions = await loadSessions(STATE.email);
+    await ensurePlayer(STATE.email);
+    renderCategory();
+    show("p-category");
+  } catch(e) { console.error(e); err.textContent = "Something went wrong. Please try again."; err.style.display = "block"; }
+  btn.disabled = false; btn.textContent = "Begin Training →";
+}
+document.getElementById("login-email").addEventListener("input", e => {
+  document.getElementById("login-btn").disabled = !e.target.value.trim();
+});
+document.getElementById("login-btn").disabled = true;
+
+function doLogout() {
+  STATE.email = ""; STATE.player = null; STATE.sessions = [];
+  document.getElementById("login-email").value = "";
+  show("p-login");
+}
+
+async function doCoachPin() {
+  const pin = document.getElementById("coach-pin-input").value.trim();
+  const err = document.getElementById("coach-pin-err");
+  if (pin !== "ikbt37") { err.style.display = "block"; document.getElementById("coach-pin-input").value = ""; return; }
+  err.style.display = "none";
+  STATE.allPlayers = await loadAllPlayers();
+  renderCoach();
+  show("p-coach");
+}
+
+// ── Category ──────────────────────────────────────────────────
+function renderCategory() {
+  document.getElementById("cat-email").textContent = STATE.email;
+  const xp = (STATE.player?.active_xp||0)+(STATE.player?.passive_xp||0);
+  const xpEl = document.getElementById("cat-xp");
+  if (xp > 0) { xpEl.style.display = "inline-flex"; xpEl.textContent = xp + " XP"; } else xpEl.style.display = "none";
+  const keysEl = document.getElementById("cat-keys");
+  keysEl.innerHTML = "";
+  ["bronze","silver","gold","master"].filter(k=>(STATE.player?.milestones||[]).includes(k)).forEach(k => {
+    keysEl.innerHTML += keyIconSVG(KEY_COLORS[k], 20);
+  });
+}
+
+function selectCat(cat) {
+  STATE.category = cat;
+  ["free","topic","positive"].forEach(c => document.getElementById("cat-"+c).classList.remove("sel"));
+  const map = { freeThought:"free", topicSpecific:"topic", positiveMindset:"positive" };
+  document.getElementById("cat-"+map[cat]).classList.add("sel");
+  document.getElementById("cat-btn").disabled = false;
+}
+
+function catContinue() {
+  if (!STATE.category) return;
+  if (STATE.category === "freeThought") { startWriting("Free Thought"); }
+  else if (STATE.category === "topicSpecific") { document.getElementById("topic-input").value=""; document.getElementById("topic-btn").disabled=true; show("p-topic"); }
+  else { renderPrompts(); show("p-prompt"); }
+}
+
+// ── Prompts ───────────────────────────────────────────────────
+function renderPrompts() {
+  STATE.selPrompt = null;
+  document.getElementById("prompt-btn").disabled = true;
+  const el = document.getElementById("prompt-list");
+  el.innerHTML = PROMPTS.map((p, i) => `
+    <div class="prompt-opt" id="pr-${i}" onclick="selectPrompt(${i})">
+      <span style="font-size:18px;margin-top:1px;">${p.icon}</span>
+      <div><div style="font-weight:600;font-size:13px;margin-bottom:2px;">${p.title}</div>
+      <div style="color:rgba(237,232,216,.38);font-size:12px;">${p.q}</div></div>
+    </div>`).join("");
+}
+function selectPrompt(i) {
+  STATE.selPrompt = PROMPTS[i];
+  document.querySelectorAll(".prompt-opt").forEach(el => el.classList.remove("sel"));
+  document.getElementById("pr-"+i).classList.add("sel");
+  document.getElementById("prompt-btn").disabled = false;
+}
+function startWritingPrompt() {
+  if (!STATE.selPrompt) return;
+  startWriting(STATE.selPrompt.title);
+}
+
+// ── Writing ───────────────────────────────────────────────────
+function startWriting(topic) {
+  STATE.writingTopic = topic;
+  STATE.c1 = 0; STATE.c2 = 0; STATE.ks = 0;
+  STATE.gameState = "idle"; STATE.lastKey = null; STATE.done = false; STATE.writingText = "";
+  clearInterval(STATE.iv);
+
+  document.getElementById("w-topic").textContent = topic;
+  document.getElementById("w-email").textContent = STATE.email;
+  document.getElementById("c1-disp").textContent = "0:00";
+  document.getElementById("c1-disp").className = "clock-num cn-gold";
+  document.getElementById("c2-disp").textContent = "0:00";
+  document.getElementById("c2-disp").className = "clock-num cn-dim";
+  document.getElementById("c1-bar").style.width = "0%";
+  document.getElementById("c2-bar").style.width = "0%";
+  document.getElementById("c2-box").classList.remove("danger");
+  document.getElementById("w-area").value = "";
+  document.getElementById("w-area").disabled = false;
+  document.getElementById("w-area").placeholder = "Begin typing to start your session… the clock follows your words.";
+  document.getElementById("w-overlay").classList.remove("show");
+  document.getElementById("w-submit").style.display = "none";
+  document.getElementById("w-ks").textContent = "0";
+  document.getElementById("w-kpm").textContent = "—";
+  document.getElementById("w-xp").textContent = "+1";
+  document.getElementById("w-hint").textContent = "Type to start the clock ↑";
+  document.getElementById("w-hint").style.color = "rgba(237,232,216,.2)";
+  setStatus("idle");
+
+  const banner = document.getElementById("w-prompt-banner");
+  if (STATE.category === "positiveMindset" && STATE.selPrompt) {
+    banner.textContent = STATE.selPrompt.q; banner.style.display = "block";
+  } else if (STATE.category === "topicSpecific") {
+    banner.textContent = "Write about: " + topic; banner.style.display = "block";
+  } else { banner.style.display = "none"; }
+
+  show("p-writing");
+  setTimeout(() => document.getElementById("w-area").focus(), 80);
+
+  STATE.iv = setInterval(() => {
+    if (STATE.gameState === "won" || STATE.gameState === "lost") return;
+    const now = Date.now();
+    if (STATE.gameState === "typing") {
+      if (STATE.lastKey && now - STATE.lastKey > GAP_MS) {
+        STATE.gameState = "paused"; setStatus("paused");
+        document.getElementById("c1-disp").className = "clock-num cn-dim";
+        document.getElementById("w-hint").textContent = "⚠ " + C2_LIMIT + "s remaining";
+        document.getElementById("w-hint").style.color = "#ff6b4a";
+      } else {
+        STATE.c1 += 1;
+        const secs = Math.floor(STATE.c1/10);
+        document.getElementById("c1-disp").textContent = fmt(secs);
+        document.getElementById("c1-bar").style.width = Math.min(100,(secs/600)*100)+"%";
+        const mins = STATE.c1/600;
+        if (mins > 0) {
+          const kpm = Math.round(STATE.ks/mins);
+          document.getElementById("w-kpm").textContent = kpm;
+        }
+        document.getElementById("w-xp").textContent = "+" + Math.max(1,Math.round(Math.floor(STATE.c1/10)/60));
+      }
+    } else if (STATE.gameState === "paused") {
+      STATE.c2 += 1;
+      const secs = Math.floor(STATE.c2/10);
+      const pct = secs/C2_LIMIT;
+      const col = pct>.66?"#ff4444":pct>.33?"#ff9a4a":"#D4A843";
+      document.getElementById("c2-disp").textContent = fmt(secs);
+      document.getElementById("c2-disp").className = "clock-num cn-red";
+      document.getElementById("c2-bar").style.width = Math.min(100,pct*100)+"%";
+      document.getElementById("c2-bar").style.background = col;
+      document.getElementById("c2-box").classList.add("danger");
+      const left = Math.max(0, C2_LIMIT - secs);
+      document.getElementById("w-hint").textContent = "⚠ " + left + "s remaining";
+      if (secs >= C2_LIMIT) {
+        STATE.gameState = "lost";
+        finish("lost");
+      }
+    }
+  }, TICK_MS);
+}
+
+document.getElementById("w-area").addEventListener("keydown", e => {
+  if (STATE.done) return;
+  if (e.key.length===1||e.key==="Backspace"||e.key==="Enter") {
+    STATE.ks++; document.getElementById("w-ks").textContent = STATE.ks;
+  }
+  STATE.lastKey = Date.now();
+  if (STATE.gameState === "idle" || STATE.gameState === "paused") {
+    STATE.gameState = "typing"; setStatus("typing");
+    document.getElementById("c1-disp").className = "clock-num cn-gold";
+    document.getElementById("c2-box").classList.remove("danger");
+    document.getElementById("w-hint").textContent = "";
+    if (STATE.gameState !== "idle") {
+      document.getElementById("c2-disp").className = "clock-num cn-red";
+    }
+  }
+  if (!STATE.done && STATE.ks === 1) {
+    document.getElementById("w-submit").style.display = "block";
+  }
+});
+document.getElementById("w-area").addEventListener("input", e => {
+  STATE.writingText = e.target.value;
+  if (STATE.gameState === "idle") {
+    STATE.gameState = "typing"; setStatus("typing");
+    document.getElementById("c1-disp").className = "clock-num cn-gold";
+    document.getElementById("w-hint").textContent = "";
+  }
+});
+
+function setStatus(st) {
+  const el = document.getElementById("w-status");
+  el.className = "status-badge s-"+st;
+  el.textContent = {idle:"Ready",typing:"● Writing",paused:"⚠ Paused",won:"✓ Submitted",lost:"✗ Time Out"}[st];
+}
+
+function submitNow() {
+  if (STATE.done) return;
+  STATE.gameState = "won";
+  finish("won");
+}
+
+function goHome() {
+  clearInterval(STATE.iv);
+  STATE.done = true;
+  STATE.category = null; STATE.selPrompt = null;
+  document.querySelectorAll(".card").forEach(c => c.classList.remove("sel"));
+  document.getElementById("cat-btn").disabled = true;
+  renderCategory();
+  show("p-category");
+}
+
+async function finish(outcome) {
+  if (STATE.done) return; STATE.done = true;
+  clearInterval(STATE.iv);
+  setStatus(outcome);
+  document.getElementById("w-area").disabled = true;
+  document.getElementById("w-submit").style.display = "none";
+  const ov = document.getElementById("w-overlay");
+  document.getElementById("w-overlay-icon").innerHTML = keyIconSVG(outcome==="won"?"#D4A843":"#ff5555", 56);
+  document.getElementById("w-overlay-txt").style.color = outcome==="won"?"#D4A843":"#ff5555";
+  document.getElementById("w-overlay-txt").textContent = outcome==="won"?"Submitted":"Time Out";
+  ov.classList.add("show");
+
+  const c1s = Math.round(STATE.c1/10);
+  const c1m = c1s/60;
+  const kpm = c1m > 0.02 ? Math.round(STATE.ks/c1m) : 0;
+  const xp  = Math.max(1, Math.round(c1m));
+
+  const p = STATE.player || await loadPlayer(STATE.email);
+  const oldXP = p.active_xp || 0;
+  const newXP = oldXP + xp;
+  const isFirst = (p.session_count||0) === 0;
+  const triggered = checkMilestones(oldXP, newXP, p.milestones||[], isFirst);
+  const updated = { ...p, active_xp:newXP, session_count:(p.session_count||0)+1, milestones:[...(p.milestones||[]), ...triggered.map(m=>m.id)] };
+  await savePlayer(updated);
+  STATE.player = updated;
+
+  const sess = {
+    created_at: new Date().toISOString(), category: STATE.category,
+    topic: STATE.writingTopic, c1Seconds: c1s, c2Seconds: Math.round(STATE.c2/10),
+    keystrokes: STATE.ks, kpm, xp, outcome, text: STATE.writingText,
+  };
+  await saveSession(STATE.email, sess);
+  STATE.sessions.unshift(sess);
+  STATE.lastSession = { ...sess, totalXP: newXP };
+
+  setTimeout(() => {
+    ov.classList.remove("show");
+    if (triggered.length > 0) {
+      milestoneQueue = [...triggered];
+      showMilestone(milestoneQueue[0]);
+    } else {
+      renderResults();
+      show("p-results");
+    }
+  }, 900);
+}
+
+// ── Results ───────────────────────────────────────────────────
+function renderResults() {
+  const s = STATE.lastSession; if (!s) return;
+  document.getElementById("r-outcome").textContent = s.outcome==="won"?"Session Complete":"Session Ended";
+  document.getElementById("r-kpm").textContent = s.kpm;
+  document.getElementById("r-xp").textContent = "+"+s.xp;
+  document.getElementById("r-time").textContent = fmt(s.c1Seconds);
+  document.getElementById("r-total").textContent = s.totalXP;
+  const earned = STATE.player?.milestones||[];
+  const keysWrap = document.getElementById("r-keys");
+  const keysList = document.getElementById("r-keys-list");
+  keysList.innerHTML = "";
+  const ek = ["bronze","silver","gold","master"].filter(k=>earned.includes(k));
+  if (ek.length > 0) {
+    ek.forEach(k => {
+      const m = MILESTONES.find(m=>m.id===k);
+      keysList.innerHTML += `<div class="key-pill" style="color:${KEY_COLORS[k]};border-color:${KEY_COLORS[k]}40;background:${KEY_COLORS[k]}10;">${keyIconSVG(KEY_COLORS[k],14)} ${m?.label}</div>`;
+    });
+    keysWrap.style.display = "block";
+  } else keysWrap.style.display = "none";
+}
+
+// ── Progress ──────────────────────────────────────────────────
+function show_progress() {
+  const sessions = STATE.sessions;
+  const p = STATE.player;
+  const totalXP = (p?.active_xp||0)+(p?.passive_xp||0);
+  document.getElementById("pg-email").textContent = STATE.email;
+  document.getElementById("pg-xp-now").textContent = totalXP+" XP";
+  document.getElementById("pg-gold-bar").style.width = Math.min(100,(totalXP/50)*100)+"%";
+  const goldMsg = document.getElementById("pg-gold-msg");
+  if (totalXP >= 50) {
+    goldMsg.style.display = "block";
+    goldMsg.innerHTML = '🗝 Gold Key earned! Use password <strong>IK Rocks</strong> to <a href="https://www.infinitykey.rocks/book-online" target="_blank" style="color:#FFD700;">book your free session</a>.';
+  } else goldMsg.style.display = "none";
+
+  // Stats grid
+  const best = sessions.length ? Math.max(...sessions.map(s=>s.kpm||0)) : 0;
+  document.getElementById("pg-stats").innerHTML = [
+    {l:"Sessions",v:sessions.length},{l:"Total XP",v:totalXP},{l:"Best KPM",v:best}
+  ].map(s=>`<div style="background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);border-radius:10px;padding:14px;text-align:center;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#D4A843;">${s.v}</div>
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-top:2px;">${s.l}</div>
+  </div>`).join("");
+
+  // Keys earned
+  const earned = p?.milestones||[];
+  const ek = ["bronze","silver","gold","master"].filter(k=>earned.includes(k));
+  const keysWrap = document.getElementById("pg-keys-wrap");
+  if (ek.length) {
+    document.getElementById("pg-keys-list").innerHTML = ek.map(k=>`<div class="key-pill" style="color:${KEY_COLORS[k]};border-color:${KEY_COLORS[k]}40;background:${KEY_COLORS[k]}10;">${keyIconSVG(KEY_COLORS[k],14)} ${MILESTONES.find(m=>m.id===k)?.label}</div>`).join("");
+    keysWrap.style.display = "block";
+  } else keysWrap.style.display = "none";
+
+  // Chart
+  if (sessions.length > 1) {
+    const kpms = [...sessions].reverse().map(s=>s.kpm||0);
+    const mx = Math.max(...kpms, 1);
+    document.getElementById("pg-chart").innerHTML = kpms.map(k=>`<div class="chart-bar" style="height:${Math.max(4,(k/mx)*72)}px;" title="${k} KPM"></div>`).join("");
+    document.getElementById("pg-chart-wrap").style.display = "block";
+  } else document.getElementById("pg-chart-wrap").style.display = "none";
+
+  // Session list
+  const el = document.getElementById("pg-sessions");
+  if (!sessions.length) { el.innerHTML = '<div class="empty">No sessions yet. Begin your first training.</div>'; return; }
+  el.innerHTML = sessions.map((s,i)=>`
+    <div class="sess-item" id="si-${i}" onclick="toggleSess('si-${i}','sb-${i}')">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:14px;font-family:'Cormorant Garamond',serif;font-weight:600;margin-bottom:2px;">${s.topic||"Session"}</div>
+          <div style="font-size:10px;color:rgba(237,232,216,.25);">${new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · ${s.outcome==="won"?"✓ Submitted":"✗ Timed Out"} · ${fmt(s.c1Seconds||0)} active</div>
+        </div>
+        <div style="display:flex;gap:14px;">
+          <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#D4A843;line-height:1;">${s.kpm}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>
+          <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#4eff91;line-height:1;">+${s.xp}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>
+        </div>
+      </div>
+      <div class="sess-body" id="sb-${i}">${s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>"}</div>
+    </div>`).join("");
+}
+
+function toggleSess(itemId, bodyId) {
+  const item = document.getElementById(itemId);
+  const body = document.getElementById(bodyId);
+  const isOpen = item.classList.contains("open");
+  item.classList.toggle("open", !isOpen);
+  body.style.display = isOpen ? "none" : "block";
+}
+
+// Override show() to hook into progress rendering
+const _show = show;
+window.show = function(pageId) {
+  _show(pageId);
+  if (pageId === "p-progress") show_progress();
+};
+
+// ── Coach ─────────────────────────────────────────────────────
+function renderCoach() {
+  document.getElementById("coach-count").textContent = `Players — ${STATE.allPlayers.length} on record`;
+  renderCoachGrid();
+}
+function filterCoach(val) { STATE.coachFilter = val; renderCoachGrid(); }
+function renderCoachGrid() {
+  const filtered = STATE.allPlayers.filter(p => !STATE.coachFilter || p.email.includes(STATE.coachFilter.toLowerCase()));
+  const el = document.getElementById("coach-grid");
+  if (!filtered.length) { el.innerHTML = '<div style="grid-column:1/-1;color:rgba(237,232,216,.2);font-size:13px;font-style:italic;">No players found.</div>'; return; }
+  el.innerHTML = filtered.map(p => {
+    const xp = (p.active_xp||0)+(p.passive_xp||0);
+    const keys = ["bronze","silver","gold","master"].filter(k=>(p.milestones||[]).includes(k));
+    return `<div class="player-card ${STATE.selPlayer?.email===p.email?'act':''}" onclick="selectCoachPlayer('${p.email}')">
+      <div style="font-family:JetBrains Mono,monospace;font-size:11px;color:#D4A843;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.email}</div>
+      <div style="font-size:11px;color:rgba(237,232,216,.3);">${xp} XP · ${p.session_count||0} sessions</div>
+      <div style="display:flex;gap:3px;margin-top:6px;">${keys.map(k=>keyIconSVG(KEY_COLORS[k],14)).join("")}</div>
+    </div>`;
+  }).join("");
+}
+async function selectCoachPlayer(email) {
+  const p = STATE.allPlayers.find(pl=>pl.email===email);
+  STATE.selPlayer = p;
+  STATE.coachSessions = await loadSessions(email);
+  renderCoachGrid();
+  renderCoachDetail();
+}
+function renderCoachDetail() {
+  const p = STATE.selPlayer; if (!p) return;
+  const sessions = STATE.coachSessions;
+  const kpms = sessions.map(s=>s.kpm||0);
+  const mx = Math.max(...kpms, 1);
+  const txp = (p.active_xp||0)+(p.passive_xp||0);
+  const avgKpm = kpms.length ? Math.round(kpms.reduce((a,b)=>a+b,0)/kpms.length) : 0;
+  const bestKpm = kpms.length ? Math.max(...kpms) : 0;
+  const done = sessions.filter(s=>s.outcome==="won").length;
+  document.getElementById("coach-detail").innerHTML = `
+    <div style="background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);border-radius:14px;padding:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <div style="font-family:JetBrains Mono,monospace;font-size:13px;color:#D4A843;">${p.email}</div>
+          <div style="font-size:11px;color:rgba(237,232,216,.3);margin-top:2px;">${sessions.length} sessions · ${txp} XP</div>
+        </div>
+        <div style="display:flex;gap:16px;">
+          ${[{l:"Best KPM",v:bestKpm},{l:"Avg KPM",v:avgKpm},{l:"Done",v:done+"/"+sessions.length}].map(s=>`
+          <div style="text-align:center;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;color:#c084fc;line-height:1;">${s.v}</div>
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(237,232,216,.25);">${s.l}</div>
+          </div>`).join("")}
+        </div>
+      </div>
+      ${kpms.length > 1 ? `
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:6px;">KPM Trend</div>
+      <div class="chart-bars" style="height:48px;margin-bottom:12px;">${[...kpms].reverse().map(k=>`<div class="chart-bar" style="height:${Math.max(4,(k/mx)*44)}px;background:linear-gradient(0deg,#a259ff,#c084fc);"></div>`).join("")}</div>` : ""}
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:10px;">Sessions — newest first</div>
+      ${!sessions.length ? '<div class="empty" style="padding:20px 0;">No sessions yet.</div>' :
+        sessions.map((s,i)=>`
+        <div class="coach-ses" id="cs-${i}" onclick="toggleSess('cs-${i}','csb-${i}')">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                <span style="font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;">${s.topic||"Session"}</span>
+                <span style="padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;
+                  background:${s.outcome==="won"?"rgba(78,255,145,.1)":"rgba(255,85,85,.1)"};
+                  color:${s.outcome==="won"?"#4eff91":"#ff5555"};
+                  border:1px solid ${s.outcome==="won"?"rgba(78,255,145,.25)":"rgba(255,85,85,.2)"};">
+                  ${s.outcome==="won"?"Submitted":"Timed Out"}</span>
+              </div>
+              <div style="font-size:10px;color:rgba(237,232,216,.25);">
+                ${new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · Active: ${fmt(s.c1Seconds||0)} · ${s.keystrokes||0} keystrokes
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#D4A843;line-height:1;">${s.kpm}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>
+              <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#4eff91;line-height:1;">+${s.xp}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>
+            </div>
+          </div>
+          <div class="sess-body" id="csb-${i}" style="display:none;">${s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>"}</div>
+        </div>`).join("")}
+    </div>`;
+}
+async function coachRefresh() {
+  const btn = document.getElementById("coach-refresh-btn");
+  btn.textContent = "Loading…"; btn.disabled = true;
+  STATE.allPlayers = await loadAllPlayers();
+  STATE.selPlayer = null;
+  document.getElementById("coach-detail").innerHTML = "";
+  renderCoach();
+  btn.textContent = "↻ Refresh"; btn.disabled = false;
+}
+</script>
+</body>
+</html>
