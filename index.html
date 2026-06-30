@@ -287,7 +287,7 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
     </div>
 
     <div class="divider"></div>
-    <input class="field" id="login-email" type="email" placeholder="Enter your email to begin"
+    <input class="field" id="login-email" type="text" placeholder="Enter your email to begin"
       onkeydown="if(event.key==='Enter')doLogin()">
     <div class="err-txt" id="login-err">Please enter a valid email address.</div>
     <button class="btn" id="login-btn" onclick="doLogin()" disabled>Begin Training →</button>
@@ -712,8 +712,8 @@ async function doLogin() {
   err.style.display = "none";
   btn.disabled = true; btn.textContent = "Opening…";
   try {
-    // Admin
-    if (raw.toLowerCase() === "admin") {
+    // Admin (also accept "coach" as legacy keyword)
+    if (raw.toLowerCase() === "admin" || raw.toLowerCase() === "coach") {
       document.getElementById("admin-pw-input").value = "";
       document.getElementById("admin-pw-err").style.display = "none";
       show("p-admin-pin");
@@ -1305,9 +1305,3 @@ async function adminDeletePlayer(email) {
 async function adminRefresh() {
   STATE.allCoaches=await loadCoaches();
   STATE.adminPlayers=await loadAllPlayers();
-  renderAdmin();
-  showToast("Refreshed.");
-}
-</script>
-</body>
-</html>
