@@ -1305,3 +1305,10 @@ async function adminDeletePlayer(email) {
 async function adminRefresh() {
   STATE.allCoaches=await loadCoaches();
   STATE.adminPlayers=await loadAllPlayers();
+  renderAdminPlayers();
+  renderAdminCoaches();
+  showToast("Refreshed.");
+}
+</script>
+</body>
+</html>
