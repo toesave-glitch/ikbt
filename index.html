@@ -512,6 +512,7 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
         </select>
       </div>
       <div id="admin-players-list"></div>
+      <div id="admin-player-detail"></div>
     </div>
 
     <!-- Coaches panel -->
@@ -680,7 +681,7 @@ let STATE = {
   allPlayers:[], coachFilter:"", selPlayer:null, coachSessions:[],
   coachAccount:null,
   // admin
-  allCoaches:[], adminPlayers:[], adminPlayerSearch:"", adminCoachFilterVal:"", adminTab:"players",
+  allCoaches:[], adminPlayers:[], adminPlayerSearch:"", adminCoachFilterVal:"", adminTab:"players", adminSelPlayer:null, adminSessions:[],
 };
 const C2_LIMIT=30, GAP_MS=3000, TICK_MS=100;
 
@@ -1245,9 +1246,86 @@ function renderAdminPlayers() {
       +'</div>'
       +'<select onchange="adminAssignPlayer(\''+p.email+'\', this.value)" style="padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(237,232,216,.1);border-radius:6px;color:#EDE8D8;font-size:11px;font-family:\'DM Sans\',sans-serif;outline:none;cursor:pointer;">'
       +coachOpts+'</select>'
+      +'<button class="rfbtn" onclick="adminViewPlayer(\''+p.email+'\')">View</button>'
       +'<button class="del-btn" onclick="adminDeletePlayer(\''+p.email+'\')">🗑 Delete</button>'
       +'</div>';
   }).join("");
+}
+async function adminViewPlayer(email) {
+  const p=STATE.adminPlayers.find(pl=>pl.email===email); if (!p) return;
+  STATE.adminSelPlayer=p;
+  STATE.adminSessions=await loadSessions(email);
+  renderAdminPlayerDetail();
+  document.getElementById("admin-player-detail").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function renderAdminPlayerDetail() {
+  const p=STATE.adminSelPlayer; if (!p) return;
+  const sessions=STATE.adminSessions;
+  const kpms=sessions.map(s=>s.kpm||0);
+  const mx=Math.max(...kpms,1);
+  const txp=(p.active_xp||0)+(p.passive_xp||0);
+  const avgKpm=kpms.length?Math.round(kpms.reduce((a,b)=>a+b,0)/kpms.length):0;
+  const bestKpm=kpms.length?Math.max(...kpms):0;
+  const done=sessions.filter(s=>s.outcome==="won").length;
+
+  const statsHTML=[{l:"Best KPM",v:bestKpm},{l:"Avg KPM",v:avgKpm},{l:"Done",v:done+"/"+sessions.length}]
+    .map(s=>'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:700;color:#c084fc;line-height:1;">'+s.v+'</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(237,232,216,.25);">'+s.l+'</div></div>').join("");
+
+  const kpmBars=kpms.length>1
+    ? '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:6px;">KPM Trend</div>'
+      +'<div class="chart-bars" style="height:48px;margin-bottom:12px;">'
+      +[...kpms].reverse().map(k=>'<div class="chart-bar" style="height:'+Math.max(4,(k/mx)*44)+'px;background:linear-gradient(0deg,#a259ff,#c084fc);"></div>').join("")
+      +'</div>'
+    : '';
+
+  const sessionsHTML=!sessions.length
+    ? '<div class="empty" style="padding:20px 0;">No sessions yet.</div>'
+    : sessions.map((s,i)=>{
+        const wonBg=s.outcome==="won"?"rgba(78,255,145,.1)":"rgba(255,85,85,.1)";
+        const wonCol=s.outcome==="won"?"#4eff91":"#ff5555";
+        const wonBorder=s.outcome==="won"?"rgba(78,255,145,.25)":"rgba(255,85,85,.2)";
+        const wonLabel=s.outcome==="won"?"Submitted":"Timed Out";
+        const dateStr=new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+        return '<div class="coach-ses" id="acs-'+i+'" onclick="toggleAdminSess('+i+')">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+          +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">'
+          +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:14px;font-weight:600;">'+(s.topic||"Session")+'</span>'
+          +'<span style="padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;background:'+wonBg+';color:'+wonCol+';border:1px solid '+wonBorder+';">'+wonLabel+'</span>'
+          +'</div><div style="font-size:10px;color:rgba(237,232,216,.25);">'+dateStr+' · Active: '+fmt(s.c1Seconds||0)+' · '+(s.keystrokes||0)+' keystrokes</div></div>'
+          +'<div style="display:flex;gap:8px;align-items:center;">'
+          +(s.text?'<button class="copy-btn" id="acscopy-'+i+'" style="display:none;" onclick="event.stopPropagation();copyAdminSessText('+i+')">📋 Copy</button>':'')
+          +'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#D4A843;line-height:1;">'+s.kpm+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>'
+          +'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#4eff91;line-height:1;">+'+s.xp+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>'
+          +'</div></div>'
+          +'<div class="sess-body" id="acsb-'+i+'" style="display:none;">'+(s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>")+'</div>'
+          +'</div>';
+      }).join("");
+
+  document.getElementById("admin-player-detail").innerHTML =
+    '<div style="margin-top:20px;background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.15);border-radius:14px;padding:24px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+    +'<div><div style="font-family:JetBrains Mono,monospace;font-size:13px;color:#D4A843;">'+p.email+'</div>'
+    +'<div style="font-size:11px;color:rgba(237,232,216,.3);margin-top:2px;">'+sessions.length+' sessions · '+txp+' XP</div></div>'
+    +'<div style="display:flex;align-items:center;gap:16px;">'
+    +statsHTML
+    +'<button class="btn-ghost" style="width:auto;padding:6px 12px;margin-top:0;font-size:12px;" onclick="document.getElementById(\'admin-player-detail\').innerHTML=\'\';STATE.adminSelPlayer=null;">✕ Close</button>'
+    +'</div></div>'
+    +kpmBars
+    +'<div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:10px;">Sessions — newest first</div>'
+    +sessionsHTML+'</div>';
+}
+function toggleAdminSess(i) {
+  const item=document.getElementById("acs-"+i), body=document.getElementById("acsb-"+i);
+  if (!item||!body) return;
+  const isOpen=item.classList.contains("open");
+  item.classList.toggle("open",!isOpen);
+  body.style.display=isOpen?"none":"block";
+  const copyBtn=document.getElementById("acscopy-"+i);
+  if (copyBtn) copyBtn.style.display=isOpen?"none":"inline-flex";
+}
+function copyAdminSessText(i) {
+  const s=STATE.adminSessions[i];
+  if (s) copyText(s.text||"");
 }
 function renderAdminCoaches() {
   const el=document.getElementById("admin-coaches-list");
