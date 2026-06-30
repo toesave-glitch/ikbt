@@ -25,6 +25,7 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
 .wrap{position:relative;z-index:1;width:100%;max-width:520px;}
 .wrap.wide{max-width:720px;}
 .wrap.full{max-width:760px;}
+.wrap.xwide{max-width:900px;}
 
 .logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:.3em;
   text-transform:uppercase;color:rgba(212,168,67,.6);margin-bottom:32px;text-align:center;}
@@ -131,18 +132,27 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
 
 .coach-badge{padding:4px 12px;background:rgba(162,89,255,.12);border:1px solid rgba(162,89,255,.3);
   border-radius:20px;font-size:10px;font-weight:700;color:#c084fc;letter-spacing:.1em;text-transform:uppercase;}
+.admin-badge{padding:4px 12px;background:rgba(255,107,74,.1);border:1px solid rgba(255,107,74,.3);
+  border-radius:20px;font-size:10px;font-weight:700;color:#ff6b4a;letter-spacing:.1em;text-transform:uppercase;}
 .player-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px;}
 .player-card{padding:16px;background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);border-radius:10px;cursor:pointer;transition:all .15s;}
 .player-card:hover{background:rgba(212,168,67,.05);}
 .player-card.act{border-color:rgba(162,89,255,.4);background:rgba(162,89,255,.05);}
-.coach-ses{padding:12px 14px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:6px;cursor:pointer;border:1px solid transparent;}
-.coach-ses:hover{background:rgba(0,0,0,.35);}
+.coach-ses{padding:12px 14px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:6px;border:1px solid transparent;}
 .coach-ses.open{border-color:rgba(162,89,255,.2);}
 .si{width:100%;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid rgba(237,232,216,.08);border-radius:8px;color:#EDE8D8;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:14px;}
 .si::placeholder{color:rgba(237,232,216,.2);}
 .si:focus{border-color:rgba(162,89,255,.3);}
+.si-admin:focus{border-color:rgba(255,107,74,.3);}
 .rfbtn{background:transparent;border:1px solid rgba(237,232,216,.1);border-radius:6px;padding:6px 12px;color:rgba(237,232,216,.35);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;}
 .rfbtn:hover{border-color:rgba(212,168,67,.3);color:rgba(237,232,216,.7);}
+.copy-btn{background:transparent;border:1px solid rgba(212,168,67,.2);border-radius:6px;padding:5px 10px;color:rgba(212,168,67,.5);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.copy-btn:hover{border-color:rgba(212,168,67,.5);color:#D4A843;background:rgba(212,168,67,.05);}
+.del-btn{background:transparent;border:1px solid rgba(255,85,85,.2);border-radius:6px;padding:5px 10px;color:rgba(255,85,85,.45);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.del-btn:hover{border-color:rgba(255,85,85,.5);color:#ff5555;background:rgba(255,85,85,.05);}
+.tab-btn{padding:8px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(237,232,216,.1);border-radius:8px;color:rgba(237,232,216,.4);font-size:12px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.05em;}
+.tab-btn.act{background:rgba(255,107,74,.08);border-color:rgba(255,107,74,.3);color:#ff6b4a;}
+.tab-btn:hover:not(.act){border-color:rgba(237,232,216,.2);color:rgba(237,232,216,.7);}
 
 .empty{text-align:center;color:rgba(237,232,216,.2);padding:40px 0;font-size:14px;font-style:italic;}
 .err-txt{color:#ff6b4a;font-size:12px;margin-top:8px;text-align:center;display:none;}
@@ -161,11 +171,17 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
 .cert-pw{font-family:'JetBrains Mono',monospace;font-size:22px;color:#D4A843;letter-spacing:.2em;
   background:rgba(212,168,67,.1);border:1px solid rgba(212,168,67,.3);border-radius:8px;
   padding:10px 20px;display:inline-block;margin:12px 0;}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(78,255,145,.12);
+  border:1px solid rgba(78,255,145,.35);color:#4eff91;padding:10px 22px;border-radius:20px;
+  font-size:12px;font-weight:700;z-index:200;pointer-events:none;opacity:0;transition:opacity .3s;letter-spacing:.08em;}
 </style>
 </head>
 <body>
 <div class="bg-glow"></div>
 <div class="bg-inf">∞</div>
+<div id="toast"></div>
 
 <!-- MILESTONE MODAL -->
 <div class="modal" id="modal">
@@ -185,32 +201,98 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
   </div>
 </div>
 
-<!-- COACH PIN -->
-<div class="page" id="p-coach-pin">
+<!-- ADMIN PIN -->
+<div class="page" id="p-admin-pin">
   <div class="wrap">
     <div class="logo">∞ <b>Infinity Key</b> ∞</div>
-    <div class="display" style="font-size:40px;">Coach Access</div>
-    <div class="sub">Enter your PIN to continue</div>
-    <input class="field" id="coach-pin-input" type="password" placeholder="PIN"
-      onkeydown="if(event.key==='Enter')doCoachPin()">
-    <div class="err-txt" id="coach-pin-err" style="display:none;">Incorrect PIN. Try again.</div>
-    <button class="btn" onclick="doCoachPin()">Enter Dashboard →</button>
+    <div class="display" style="font-size:40px;">Admin Access</div>
+    <div class="sub">Enter admin password</div>
+    <input class="field" id="admin-pw-input" type="password" placeholder="Password"
+      onkeydown="if(event.key==='Enter')doAdminPin()">
+    <div class="err-txt" id="admin-pw-err">Incorrect password.</div>
+    <button class="btn" onclick="doAdminPin()">Enter Admin →</button>
+    <button class="btn-ghost" onclick="show('p-login')">← Back</button>
+  </div>
+</div>
+
+<!-- COACH AUTH (email-based) -->
+<div class="page" id="p-coach-auth">
+  <div class="wrap">
+    <div class="logo">∞ <b>Infinity Key</b> ∞</div>
+    <div class="display" style="font-size:40px;">Coach Login</div>
+    <div id="coach-auth-sub" class="sub">Enter your password</div>
+    <input class="field" id="coach-auth-pw" type="password" placeholder="Your password"
+      onkeydown="if(event.key==='Enter')doCoachAuth()">
+    <div class="err-txt" id="coach-auth-err">Incorrect password.</div>
+    <button class="btn" onclick="doCoachAuth()">Enter Dashboard →</button>
+    <button class="btn-ghost" onclick="show('p-login')">← Back</button>
+  </div>
+</div>
+
+<!-- COACH SET PASSWORD -->
+<div class="page" id="p-coach-setpw">
+  <div class="wrap">
+    <div class="logo">∞ <b>Infinity Key</b> ∞</div>
+    <div class="display" style="font-size:36px;" id="coach-setpw-title">Set Your Password</div>
+    <div class="sub" id="coach-setpw-sub">Choose a password for your coach account</div>
+    <input class="field" id="coach-setpw-1" type="password" placeholder="New password">
+    <input class="field" id="coach-setpw-2" type="password" placeholder="Confirm password"
+      onkeydown="if(event.key==='Enter')doCoachSetPw()">
+    <div class="err-txt" id="coach-setpw-err">Passwords don't match (min 4 characters).</div>
+    <button class="btn" onclick="doCoachSetPw()" id="coach-setpw-btn">Set Password & Enter →</button>
     <button class="btn-ghost" onclick="show('p-login')">← Back</button>
   </div>
 </div>
 
 <!-- LOGIN -->
 <div class="page active" id="p-login">
-  <div class="wrap">
+  <div class="wrap" style="max-width:580px;">
     <div class="logo">∞ <b>Infinity Key</b> ∞</div>
-    <div class="display">Brain Trainer</div>
-    <div class="sub">Enter your email to begin</div>
-    <input class="field" id="login-email" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
-    <div class="err-txt" id="login-err">Please enter a valid email address.</div>
-    <button class="btn" id="login-btn" onclick="doLogin()">Begin Training →</button>
+    <div style="text-align:center;margin-bottom:6px;">
+      <div class="display">Brain Trainer</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:17px;color:rgba(237,232,216,.45);font-style:italic;line-height:1.5;">
+        Train your mind to write in flow.
+      </div>
+    </div>
+
+    <div style="margin:20px 0 18px;font-size:13px;color:rgba(237,232,216,.45);line-height:1.75;text-align:center;">
+      Brain Trainer builds your ability to think and write without interruption — the mental state athletes call <em style="color:#D4A843;">flow</em>. Each session uses a live dual-clock to push you further, faster, and deeper into focus.
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+      <div style="padding:12px;background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);border-radius:10px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;">💭</div>
+        <div style="font-size:10px;font-weight:700;color:#D4A843;letter-spacing:.08em;margin-bottom:4px;">CHOOSE MODE</div>
+        <div style="font-size:10px;color:rgba(237,232,216,.35);line-height:1.4;">Free Thought, Topic-Specific, or Positive Mindset</div>
+      </div>
+      <div style="padding:12px;background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);border-radius:10px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;">⌨️</div>
+        <div style="font-size:10px;font-weight:700;color:#D4A843;letter-spacing:.08em;margin-bottom:4px;">WRITE IN FLOW</div>
+        <div style="font-size:10px;color:rgba(237,232,216,.35);line-height:1.4;">Your Active Clock only counts while you type</div>
+      </div>
+      <div style="padding:12px;background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);border-radius:10px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:6px;">🗝</div>
+        <div style="font-size:10px;font-weight:700;color:#D4A843;letter-spacing:.08em;margin-bottom:4px;">EARN YOUR KEY</div>
+        <div style="font-size:10px;color:rgba(237,232,216,.35);line-height:1.4;">50 XP unlocks a free coaching session</div>
+      </div>
+    </div>
+
+    <div style="padding:12px 16px;background:rgba(212,168,67,.03);border:1px solid rgba(212,168,67,.1);border-radius:10px;margin-bottom:20px;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:rgba(212,168,67,.5);margin-bottom:6px;">The Dual Clock — How Flow Training Works</div>
+      <div style="font-size:12px;color:rgba(237,232,216,.4);line-height:1.65;">
+        Your <span style="color:#D4A843;font-weight:600;">Active Timer</span> counts every second you write.
+        Stop for more than 3 seconds and your <span style="color:#ff6b4a;font-weight:600;">Pause Budget</span> starts depleting — 30 seconds total.
+        Run out and the session ends. The only way through is to keep writing.
+      </div>
+    </div>
+
     <div class="divider"></div>
-    <div style="text-align:center;font-size:12px;color:rgba(237,232,216,.2);">
-      Earn <span style="color:#D4A843;font-weight:700;">50 XP</span> to unlock a free personalised training session
+    <input class="field" id="login-email" type="email" placeholder="Enter your email to begin"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="err-txt" id="login-err">Please enter a valid email address.</div>
+    <button class="btn" id="login-btn" onclick="doLogin()" disabled>Begin Training →</button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:rgba(237,232,216,.2);">
+      Earn <span style="color:#D4A843;font-weight:700;">50 XP</span> to unlock a free personalised training session with your coach
     </div>
   </div>
 </div>
@@ -290,7 +372,6 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
       </div>
       <div class="status-badge s-idle" id="w-status">Ready</div>
     </div>
-
     <div class="clocks">
       <div class="clock-box">
         <div class="clock-lbl"><span>Active Time ⏱</span><span>Keep going</span></div>
@@ -303,9 +384,7 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
         <div class="bar"><div class="bar-fill" id="c2-bar" style="width:0%;background:#D4A843;"></div></div>
       </div>
     </div>
-
     <div id="w-prompt-banner" class="prompt-banner" style="display:none;"></div>
-
     <div class="ta-wrap">
       <textarea class="textarea" id="w-area" placeholder="Begin typing to start your session… the clock follows your words."></textarea>
       <div class="ta-overlay" id="w-overlay">
@@ -314,9 +393,7 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
         <div style="font-size:12px;color:rgba(237,232,216,.35);">Saving your session…</div>
       </div>
     </div>
-
     <button class="btn-green" id="w-submit" style="display:none;" onclick="submitNow()">Submit Now ✓</button>
-
     <div class="statsbar">
       <div style="text-align:center;"><div class="stat-n" id="w-ks">0</div><div class="stat-l">Keystrokes</div></div>
       <div style="text-align:center;"><div class="stat-n" id="w-kpm">—</div><div class="stat-l">KPM</div></div>
@@ -346,6 +423,7 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
       <div style="font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:rgba(237,232,216,.25);margin-bottom:8px;">Keys Collected</div>
       <div id="r-keys-list" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
     </div>
+    <button class="copy-btn" id="r-copy-btn" style="width:100%;padding:10px;margin-bottom:10px;display:none;" onclick="copySessionText()">📋 Copy My Writing</button>
     <button class="btn" onclick="goHome()">⌂ Home</button>
     <button class="btn-ghost" onclick="show('p-progress')">View Progress</button>
   </div>
@@ -391,8 +469,10 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="logo" style="margin-bottom:0;">∞ Infinity Key</div>
         <div class="coach-badge">Coach</div>
+        <div id="coach-name-display" style="font-size:12px;color:rgba(237,232,216,.3);font-family:JetBrains Mono,monospace;"></div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;">
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="rfbtn" onclick="changeCoachPassword()" title="Change password">🔑</button>
         <button class="rfbtn" id="coach-refresh-btn" onclick="coachRefresh()">↻ Refresh</button>
         <button class="btn-ghost" style="width:auto;padding:8px 16px;margin-top:0;" onclick="doLogout()">← Exit</button>
       </div>
@@ -404,50 +484,142 @@ body{background:#05050a;color:#EDE8D8;font-family:'DM Sans',sans-serif;min-heigh
   </div>
 </div>
 
+<!-- ADMIN -->
+<div class="page top" id="p-admin">
+  <div class="wrap xwide">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,107,74,.1);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="logo" style="margin-bottom:0;">∞ Infinity Key</div>
+        <div class="admin-badge">Admin</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="rfbtn" onclick="adminRefresh()">↻ Refresh</button>
+        <button class="btn-ghost" style="width:auto;padding:8px 16px;margin-top:0;" onclick="doLogout()">← Exit</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button class="tab-btn act" id="tab-players" onclick="switchAdminTab('players')">Players</button>
+      <button class="tab-btn" id="tab-coaches" onclick="switchAdminTab('coaches')">Coaches</button>
+    </div>
+
+    <!-- Players panel -->
+    <div id="admin-players-panel">
+      <div style="display:flex;gap:10px;margin-bottom:14px;align-items:center;">
+        <input class="si si-admin" style="margin-bottom:0;flex:1;" placeholder="Search players by email…" oninput="filterAdminPlayers(this.value)" id="admin-player-search">
+        <select id="admin-coach-filter" onchange="filterAdminByCoach(this.value)"
+          style="padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(237,232,216,.08);border-radius:8px;color:#EDE8D8;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;">
+          <option value="">All coaches</option>
+        </select>
+      </div>
+      <div id="admin-players-list"></div>
+    </div>
+
+    <!-- Coaches panel -->
+    <div id="admin-coaches-panel" style="display:none;">
+      <div id="admin-coaches-list" style="margin-bottom:20px;"></div>
+      <div style="padding:20px;background:rgba(255,255,255,.02);border:1px solid rgba(255,107,74,.1);border-radius:12px;">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,107,74,.5);margin-bottom:12px;">Add New Coach</div>
+        <input class="field" id="new-coach-email" placeholder="coach@email.com" style="margin-bottom:8px;">
+        <input class="field" id="new-coach-name" placeholder="Coach name (optional)" style="margin-bottom:12px;">
+        <button class="btn" style="background:linear-gradient(135deg,rgba(255,107,74,.7),rgba(220,60,40,.8));color:#fff;" onclick="addCoach()">Add Coach →</button>
+        <div class="err-txt" id="add-coach-err" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── Supabase ──────────────────────────────────────────────────
 const sb = supabase.createClient(
   "https://pcgbaqueqqvxoyzmcpgu.supabase.co",
   "sb_publishable_wAVDWQ8avH5OQuulmFw3UQ_wPB9W__C"
 );
+const ADMIN_PW = "stewannaenzo";
 
-// ── Storage ───────────────────────────────────────────────────
+// ── DB ────────────────────────────────────────────────────────
 async function loadPlayer(email) {
   try {
     const { data } = await sb.from("players").select("*").eq("email", email.toLowerCase().trim()).maybeSingle();
     if (data) return { ...data, milestones: data.milestones || [] };
   } catch {}
-  return { email: email.toLowerCase().trim(), active_xp: 0, passive_xp: 0, milestones: [], session_count: 0 };
+  return { email: email.toLowerCase().trim(), active_xp:0, passive_xp:0, milestones:[], session_count:0 };
 }
 async function savePlayer(p) {
   try {
     await sb.from("players").upsert(
-      { email: p.email, active_xp: p.active_xp, passive_xp: p.passive_xp, milestones: p.milestones || [], session_count: p.session_count },
-      { onConflict: "email" }
+      { email:p.email, active_xp:p.active_xp, passive_xp:p.passive_xp, milestones:p.milestones||[], session_count:p.session_count },
+      { onConflict:"email" }
     );
-  } catch(e) { console.error("savePlayer:", e); }
+  } catch(e) { console.error("savePlayer:",e); }
 }
 async function loadSessions(email) {
   try {
-    const { data } = await sb.from("sessions").select("*").eq("email", email.toLowerCase().trim()).order("created_at", { ascending: false });
-    return (data || []).map(s => ({ ...s, c1Seconds: s.c1_seconds, c2Seconds: s.c2_seconds }));
+    const { data } = await sb.from("sessions").select("*").eq("email", email.toLowerCase().trim()).order("created_at",{ascending:false});
+    return (data||[]).map(s=>({...s, c1Seconds:s.c1_seconds, c2Seconds:s.c2_seconds}));
   } catch { return []; }
 }
 async function saveSession(email, s) {
   try {
     await sb.from("sessions").insert({
-      email: email.toLowerCase().trim(), created_at: s.created_at,
-      category: s.category, topic: s.topic,
-      c1_seconds: s.c1Seconds, c2_seconds: s.c2Seconds,
-      keystrokes: s.keystrokes, kpm: s.kpm, xp: s.xp, outcome: s.outcome, text: s.text,
+      email:email.toLowerCase().trim(), created_at:s.created_at,
+      category:s.category, topic:s.topic,
+      c1_seconds:s.c1Seconds, c2_seconds:s.c2Seconds,
+      keystrokes:s.keystrokes, kpm:s.kpm, xp:s.xp, outcome:s.outcome, text:s.text,
     });
-  } catch(e) { console.error("saveSession:", e); }
+  } catch(e) { console.error("saveSession:",e); }
 }
 async function ensurePlayer(email) {
-  try { await sb.from("players").upsert({ email: email.toLowerCase().trim() }, { onConflict: "email", ignoreDuplicates: true }); } catch {}
+  try { await sb.from("players").upsert({email:email.toLowerCase().trim()},{onConflict:"email",ignoreDuplicates:true}); } catch {}
 }
 async function loadAllPlayers() {
-  try { const { data } = await sb.from("players").select("*"); return data || []; } catch { return []; }
+  try { const { data } = await sb.from("players").select("*"); return data||[]; } catch { return []; }
+}
+async function loadCoachPlayers(coachEmail) {
+  try { const { data } = await sb.from("players").select("*").eq("coach_email", coachEmail.toLowerCase()); return data||[]; } catch { return []; }
+}
+async function deletePlayerDB(email) {
+  try {
+    await sb.from("sessions").delete().eq("email", email);
+    await sb.from("players").delete().eq("email", email);
+  } catch(e) { console.error("deletePlayer:",e); }
+}
+async function loadCoaches() {
+  try { const { data } = await sb.from("coaches").select("*").order("created_at",{ascending:true}); return data||[]; } catch { return []; }
+}
+async function saveCoach(coach) {
+  try { await sb.from("coaches").upsert(coach, {onConflict:"email"}); } catch(e) { console.error("saveCoach:",e); }
+}
+async function removeCoachDB(email) {
+  try {
+    await sb.from("players").update({coach_email:null}).eq("coach_email", email);
+    await sb.from("coaches").delete().eq("email", email);
+  } catch(e) { console.error("removeCoach:",e); }
+}
+async function assignPlayerCoach(playerEmail, coachEmail) {
+  try {
+    await sb.from("players").update({coach_email: coachEmail||null}).eq("email", playerEmail);
+  } catch(e) { console.error("assignPlayer:",e); }
+}
+
+// ── Copy + Toast ──────────────────────────────────────────────
+function copyText(text) {
+  if (!text) { showToast("Nothing to copy."); return; }
+  const fallback = () => {
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.cssText = "position:fixed;opacity:0;";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand("copy"); } catch {}
+    document.body.removeChild(ta);
+  };
+  if (navigator.clipboard) { navigator.clipboard.writeText(text).then(()=>{}).catch(fallback); }
+  else { fallback(); }
+  showToast("✓ Text copied!");
+}
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.opacity = "1";
+  clearTimeout(t._to);
+  t._to = setTimeout(()=>{ t.style.opacity="0"; }, 2200);
 }
 
 // ── Milestones ────────────────────────────────────────────────
@@ -468,15 +640,14 @@ function checkMilestones(oldXP, newXP, earned, isFirst) {
   }
   return out;
 }
-
 function keyIconSVG(color, size=64) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="26" r="13" stroke="${color}" stroke-width="3.5" fill="none"/>
-    <circle cx="22" cy="26" r="5" fill="${color}" opacity="0.25"/>
-    <path d="M32 34 L56 48" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
-    <path d="M46 42 L46 50" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
-    <path d="M52 45 L52 53" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
-  </svg>`;
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">'
+    +'<circle cx="22" cy="26" r="13" stroke="'+color+'" stroke-width="3.5" fill="none"/>'
+    +'<circle cx="22" cy="26" r="5" fill="'+color+'" opacity="0.25"/>'
+    +'<path d="M32 34 L56 48" stroke="'+color+'" stroke-width="3.5" stroke-linecap="round"/>'
+    +'<path d="M46 42 L46 50" stroke="'+color+'" stroke-width="3.5" stroke-linecap="round"/>'
+    +'<path d="M52 45 L52 53" stroke="'+color+'" stroke-width="3.5" stroke-linecap="round"/>'
+    +'</svg>';
 }
 
 // ── Milestone queue ───────────────────────────────────────────
@@ -493,48 +664,44 @@ function showMilestone(m) {
 function dismissMilestone() {
   milestoneQueue.shift();
   document.getElementById("modal").classList.remove("show");
-  if (milestoneQueue.length > 0) {
-    setTimeout(() => showMilestone(milestoneQueue[0]), 200);
-  } else {
-    setTimeout(() => show("p-results"), 200);
-  }
+  if (milestoneQueue.length > 0) { setTimeout(()=>showMilestone(milestoneQueue[0]), 200); }
+  else { setTimeout(()=>show("p-results"), 200); }
 }
 
 // ── State ─────────────────────────────────────────────────────
 let STATE = {
-  email: "", player: null, sessions: [],
-  category: null, selPrompt: null,
-  // writing
-  c1: 0, c2: 0, ks: 0, gameState: "idle",
-  lastKey: null, done: false, iv: null,
-  writingTopic: "", writingText: "",
-  lastSession: null,
+  email:"", player:null, sessions:[],
+  category:null, selPrompt:null,
+  c1:0, c2:0, ks:0, gameState:"idle",
+  lastKey:null, done:false, iv:null,
+  writingTopic:"", writingText:"",
+  lastSession:null,
   // coach
-  allPlayers: [], coachFilter: "", selPlayer: null, coachSessions: [],
+  allPlayers:[], coachFilter:"", selPlayer:null, coachSessions:[],
+  coachAccount:null,
+  // admin
+  allCoaches:[], adminPlayers:[], adminPlayerSearch:"", adminCoachFilterVal:"", adminTab:"players",
 };
-
-const C2_LIMIT = 30;
-const GAP_MS   = 3000;
-const TICK_MS  = 100;
+const C2_LIMIT=30, GAP_MS=3000, TICK_MS=100;
 
 const PROMPTS = [
-  { icon:"🌞", title:"Gratitude Focus",       q:"What was the best part of your week?" },
-  { icon:"❌", title:"Learning from Failure",  q:"What mistake did you learn from this week?" },
-  { icon:"🌟", title:"Pride in Others",        q:"Who were you proud of this week—and why?" },
-  { icon:"🔧", title:"Problem Solving",        q:"What's one thing you could've improved this week?" },
-  { icon:"💛", title:"Kindness",               q:"Who did you help this week?" },
-  { icon:"🧠", title:"Curiosity",              q:"What was the most interesting thing you learned this week?" },
-  { icon:"🚀", title:"Courage + Creativity",  q:"What's something new you want to try next week?" },
+  { icon:"🌞", title:"Gratitude Focus",      q:"What was the best part of your week?" },
+  { icon:"❌", title:"Learning from Failure", q:"What mistake did you learn from this week?" },
+  { icon:"🌟", title:"Pride in Others",       q:"Who were you proud of this week—and why?" },
+  { icon:"🔧", title:"Problem Solving",       q:"What's one thing you could've improved this week?" },
+  { icon:"💛", title:"Kindness",              q:"Who did you help this week?" },
+  { icon:"🧠", title:"Curiosity",             q:"What was the most interesting thing you learned this week?" },
+  { icon:"🚀", title:"Courage + Creativity", q:"What's something new you want to try next week?" },
 ];
 
 // ── Navigation ────────────────────────────────────────────────
 function show(pageId) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   document.getElementById(pageId).classList.add("active");
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
+  if (pageId==="p-progress") show_progress();
 }
-
-function fmt(s) { return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`; }
+function fmt(s) { return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
 
 // ── Login ─────────────────────────────────────────────────────
 async function doLogin() {
@@ -545,41 +712,103 @@ async function doLogin() {
   err.style.display = "none";
   btn.disabled = true; btn.textContent = "Opening…";
   try {
-    if (raw.toLowerCase() === "coach") {
-      document.getElementById("coach-pin-input").value = "";
-      document.getElementById("coach-pin-err").style.display = "none";
-      show("p-coach-pin");
-      setTimeout(() => document.getElementById("coach-pin-input").focus(), 80);
-      btn.disabled = false; btn.textContent = "Begin Training →";
-      return;
+    // Admin
+    if (raw.toLowerCase() === "admin") {
+      document.getElementById("admin-pw-input").value = "";
+      document.getElementById("admin-pw-err").style.display = "none";
+      show("p-admin-pin");
+      setTimeout(()=>document.getElementById("admin-pw-input").focus(), 80);
+      btn.disabled=false; btn.textContent="Begin Training →"; return;
     }
-    if (!raw.includes("@")) { err.style.display = "block"; btn.disabled = false; btn.textContent = "Begin Training →"; return; }
+    // Check if it's a coach email
+    if (raw.includes("@")) {
+      const { data: coachData } = await sb.from("coaches").select("*").eq("email", raw.toLowerCase()).maybeSingle();
+      if (coachData) {
+        STATE.coachAccount = coachData;
+        document.getElementById("coach-auth-pw").value = "";
+        document.getElementById("coach-auth-err").style.display = "none";
+        if (!coachData.password) {
+          document.getElementById("coach-setpw-title").textContent = "Set Your Password";
+          document.getElementById("coach-setpw-sub").textContent = "First login — choose a password for your coach account";
+          document.getElementById("coach-setpw-btn").textContent = "Set Password & Enter →";
+          document.getElementById("coach-setpw-1").value = "";
+          document.getElementById("coach-setpw-2").value = "";
+          document.getElementById("coach-setpw-err").style.display = "none";
+          show("p-coach-setpw");
+        } else {
+          document.getElementById("coach-auth-sub").textContent = coachData.name ? "Welcome back, "+coachData.name : coachData.email;
+          show("p-coach-auth");
+          setTimeout(()=>document.getElementById("coach-auth-pw").focus(), 80);
+        }
+        btn.disabled=false; btn.textContent="Begin Training →"; return;
+      }
+    }
+    // Student
+    if (!raw.includes("@")) { err.style.display="block"; btn.disabled=false; btn.textContent="Begin Training →"; return; }
     STATE.email = raw.toLowerCase().trim();
     STATE.player = await loadPlayer(STATE.email);
     STATE.sessions = await loadSessions(STATE.email);
     await ensurePlayer(STATE.email);
     renderCategory();
     show("p-category");
-  } catch(e) { console.error(e); err.textContent = "Something went wrong. Please try again."; err.style.display = "block"; }
-  btn.disabled = false; btn.textContent = "Begin Training →";
+  } catch(e) { console.error(e); err.textContent="Something went wrong. Please try again."; err.style.display="block"; }
+  btn.disabled=false; btn.textContent="Begin Training →";
 }
-document.getElementById("login-email").addEventListener("input", e => {
+document.getElementById("login-email").addEventListener("input", e=>{
   document.getElementById("login-btn").disabled = !e.target.value.trim();
 });
 document.getElementById("login-btn").disabled = true;
 
 function doLogout() {
-  STATE.email = ""; STATE.player = null; STATE.sessions = [];
-  document.getElementById("login-email").value = "";
+  STATE.email=""; STATE.player=null; STATE.sessions=[]; STATE.coachAccount=null;
+  document.getElementById("login-email").value="";
   show("p-login");
 }
 
-async function doCoachPin() {
-  const pin = document.getElementById("coach-pin-input").value.trim();
-  const err = document.getElementById("coach-pin-err");
-  if (pin !== "ikbt37") { err.style.display = "block"; document.getElementById("coach-pin-input").value = ""; return; }
-  err.style.display = "none";
-  STATE.allPlayers = await loadAllPlayers();
+async function doAdminPin() {
+  const pw = document.getElementById("admin-pw-input").value.trim();
+  const err = document.getElementById("admin-pw-err");
+  if (pw !== ADMIN_PW) { err.style.display="block"; document.getElementById("admin-pw-input").value=""; return; }
+  err.style.display="none";
+  STATE.allCoaches = await loadCoaches();
+  STATE.adminPlayers = await loadAllPlayers();
+  STATE.adminTab = "players";
+  renderAdmin();
+  show("p-admin");
+}
+
+async function doCoachAuth() {
+  const pw = document.getElementById("coach-auth-pw").value.trim();
+  const err = document.getElementById("coach-auth-err");
+  if (pw !== STATE.coachAccount.password) { err.style.display="block"; document.getElementById("coach-auth-pw").value=""; return; }
+  err.style.display="none";
+  await loadAndShowCoachDashboard();
+}
+
+async function doCoachSetPw() {
+  const pw1 = document.getElementById("coach-setpw-1").value.trim();
+  const pw2 = document.getElementById("coach-setpw-2").value.trim();
+  const err = document.getElementById("coach-setpw-err");
+  if (!pw1 || pw1 !== pw2 || pw1.length < 4) { err.style.display="block"; return; }
+  err.style.display="none";
+  STATE.coachAccount.password = pw1;
+  await saveCoach(STATE.coachAccount);
+  await loadAndShowCoachDashboard();
+}
+
+function changeCoachPassword() {
+  document.getElementById("coach-setpw-title").textContent = "Change Password";
+  document.getElementById("coach-setpw-sub").textContent = "Enter a new password for your account";
+  document.getElementById("coach-setpw-btn").textContent = "Update Password →";
+  document.getElementById("coach-setpw-1").value = "";
+  document.getElementById("coach-setpw-2").value = "";
+  document.getElementById("coach-setpw-err").style.display = "none";
+  show("p-coach-setpw");
+}
+
+async function loadAndShowCoachDashboard() {
+  document.getElementById("coach-name-display").textContent = STATE.coachAccount.name || STATE.coachAccount.email;
+  STATE.allPlayers = await loadCoachPlayers(STATE.coachAccount.email);
   renderCoach();
   show("p-coach");
 }
@@ -589,26 +818,24 @@ function renderCategory() {
   document.getElementById("cat-email").textContent = STATE.email;
   const xp = (STATE.player?.active_xp||0)+(STATE.player?.passive_xp||0);
   const xpEl = document.getElementById("cat-xp");
-  if (xp > 0) { xpEl.style.display = "inline-flex"; xpEl.textContent = xp + " XP"; } else xpEl.style.display = "none";
+  if (xp > 0) { xpEl.style.display="inline-flex"; xpEl.textContent=xp+" XP"; } else xpEl.style.display="none";
   const keysEl = document.getElementById("cat-keys");
   keysEl.innerHTML = "";
-  ["bronze","silver","gold","master"].filter(k=>(STATE.player?.milestones||[]).includes(k)).forEach(k => {
+  ["bronze","silver","gold","master"].filter(k=>(STATE.player?.milestones||[]).includes(k)).forEach(k=>{
     keysEl.innerHTML += keyIconSVG(KEY_COLORS[k], 20);
   });
 }
-
 function selectCat(cat) {
   STATE.category = cat;
-  ["free","topic","positive"].forEach(c => document.getElementById("cat-"+c).classList.remove("sel"));
+  ["free","topic","positive"].forEach(c=>document.getElementById("cat-"+c).classList.remove("sel"));
   const map = { freeThought:"free", topicSpecific:"topic", positiveMindset:"positive" };
   document.getElementById("cat-"+map[cat]).classList.add("sel");
   document.getElementById("cat-btn").disabled = false;
 }
-
 function catContinue() {
   if (!STATE.category) return;
-  if (STATE.category === "freeThought") { startWriting("Free Thought"); }
-  else if (STATE.category === "topicSpecific") { document.getElementById("topic-input").value=""; document.getElementById("topic-btn").disabled=true; show("p-topic"); }
+  if (STATE.category==="freeThought") { startWriting("Free Thought"); }
+  else if (STATE.category==="topicSpecific") { document.getElementById("topic-input").value=""; document.getElementById("topic-btn").disabled=true; show("p-topic"); }
   else { renderPrompts(); show("p-prompt"); }
 }
 
@@ -616,420 +843,470 @@ function catContinue() {
 function renderPrompts() {
   STATE.selPrompt = null;
   document.getElementById("prompt-btn").disabled = true;
-  const el = document.getElementById("prompt-list");
-  el.innerHTML = PROMPTS.map((p, i) => `
-    <div class="prompt-opt" id="pr-${i}" onclick="selectPrompt(${i})">
-      <span style="font-size:18px;margin-top:1px;">${p.icon}</span>
-      <div><div style="font-weight:600;font-size:13px;margin-bottom:2px;">${p.title}</div>
-      <div style="color:rgba(237,232,216,.38);font-size:12px;">${p.q}</div></div>
-    </div>`).join("");
+  document.getElementById("prompt-list").innerHTML = PROMPTS.map((p,i)=>
+    '<div class="prompt-opt" id="pr-'+i+'" onclick="selectPrompt('+i+')">'
+    +'<span style="font-size:18px;margin-top:1px;">'+p.icon+'</span>'
+    +'<div><div style="font-weight:600;font-size:13px;margin-bottom:2px;">'+p.title+'</div>'
+    +'<div style="color:rgba(237,232,216,.38);font-size:12px;">'+p.q+'</div></div></div>'
+  ).join("");
 }
 function selectPrompt(i) {
   STATE.selPrompt = PROMPTS[i];
-  document.querySelectorAll(".prompt-opt").forEach(el => el.classList.remove("sel"));
+  document.querySelectorAll(".prompt-opt").forEach(el=>el.classList.remove("sel"));
   document.getElementById("pr-"+i).classList.add("sel");
   document.getElementById("prompt-btn").disabled = false;
 }
-function startWritingPrompt() {
-  if (!STATE.selPrompt) return;
-  startWriting(STATE.selPrompt.title);
-}
+function startWritingPrompt() { if (STATE.selPrompt) startWriting(STATE.selPrompt.title); }
 
 // ── Writing ───────────────────────────────────────────────────
 function startWriting(topic) {
-  STATE.writingTopic = topic;
-  STATE.c1 = 0; STATE.c2 = 0; STATE.ks = 0;
-  STATE.gameState = "idle"; STATE.lastKey = null; STATE.done = false; STATE.writingText = "";
+  STATE.writingTopic=topic; STATE.c1=0; STATE.c2=0; STATE.ks=0;
+  STATE.gameState="idle"; STATE.lastKey=null; STATE.done=false; STATE.writingText="";
   clearInterval(STATE.iv);
-
-  document.getElementById("w-topic").textContent = topic;
-  document.getElementById("w-email").textContent = STATE.email;
-  document.getElementById("c1-disp").textContent = "0:00";
-  document.getElementById("c1-disp").className = "clock-num cn-gold";
-  document.getElementById("c2-disp").textContent = "0:00";
-  document.getElementById("c2-disp").className = "clock-num cn-dim";
-  document.getElementById("c1-bar").style.width = "0%";
-  document.getElementById("c2-bar").style.width = "0%";
+  document.getElementById("w-topic").textContent=topic;
+  document.getElementById("w-email").textContent=STATE.email;
+  document.getElementById("c1-disp").textContent="0:00";
+  document.getElementById("c1-disp").className="clock-num cn-gold";
+  document.getElementById("c2-disp").textContent="0:00";
+  document.getElementById("c2-disp").className="clock-num cn-dim";
+  document.getElementById("c1-bar").style.width="0%";
+  document.getElementById("c2-bar").style.width="0%";
   document.getElementById("c2-box").classList.remove("danger");
-  document.getElementById("w-area").value = "";
-  document.getElementById("w-area").disabled = false;
-  document.getElementById("w-area").placeholder = "Begin typing to start your session… the clock follows your words.";
+  document.getElementById("w-area").value="";
+  document.getElementById("w-area").disabled=false;
+  document.getElementById("w-area").placeholder="Begin typing to start your session… the clock follows your words.";
   document.getElementById("w-overlay").classList.remove("show");
-  document.getElementById("w-submit").style.display = "none";
-  document.getElementById("w-ks").textContent = "0";
-  document.getElementById("w-kpm").textContent = "—";
-  document.getElementById("w-xp").textContent = "+1";
-  document.getElementById("w-hint").textContent = "Type to start the clock ↑";
-  document.getElementById("w-hint").style.color = "rgba(237,232,216,.2)";
+  document.getElementById("w-submit").style.display="none";
+  document.getElementById("w-ks").textContent="0";
+  document.getElementById("w-kpm").textContent="—";
+  document.getElementById("w-xp").textContent="+1";
+  document.getElementById("w-hint").textContent="Type to start the clock ↑";
+  document.getElementById("w-hint").style.color="rgba(237,232,216,.2)";
   setStatus("idle");
-
-  const banner = document.getElementById("w-prompt-banner");
-  if (STATE.category === "positiveMindset" && STATE.selPrompt) {
-    banner.textContent = STATE.selPrompt.q; banner.style.display = "block";
-  } else if (STATE.category === "topicSpecific") {
-    banner.textContent = "Write about: " + topic; banner.style.display = "block";
-  } else { banner.style.display = "none"; }
-
+  const banner=document.getElementById("w-prompt-banner");
+  if (STATE.category==="positiveMindset"&&STATE.selPrompt) { banner.textContent=STATE.selPrompt.q; banner.style.display="block"; }
+  else if (STATE.category==="topicSpecific") { banner.textContent="Write about: "+topic; banner.style.display="block"; }
+  else { banner.style.display="none"; }
   show("p-writing");
-  setTimeout(() => document.getElementById("w-area").focus(), 80);
-
-  STATE.iv = setInterval(() => {
-    if (STATE.gameState === "won" || STATE.gameState === "lost") return;
-    const now = Date.now();
-    if (STATE.gameState === "typing") {
-      if (STATE.lastKey && now - STATE.lastKey > GAP_MS) {
-        STATE.gameState = "paused"; setStatus("paused");
-        document.getElementById("c1-disp").className = "clock-num cn-dim";
-        document.getElementById("w-hint").textContent = "⚠ " + C2_LIMIT + "s remaining";
-        document.getElementById("w-hint").style.color = "#ff6b4a";
+  setTimeout(()=>document.getElementById("w-area").focus(), 80);
+  STATE.iv = setInterval(()=>{
+    if (STATE.gameState==="won"||STATE.gameState==="lost") return;
+    const now=Date.now();
+    if (STATE.gameState==="typing") {
+      if (STATE.lastKey&&now-STATE.lastKey>GAP_MS) {
+        STATE.gameState="paused"; setStatus("paused");
+        document.getElementById("c1-disp").className="clock-num cn-dim";
+        document.getElementById("w-hint").textContent="⚠ "+C2_LIMIT+"s remaining";
+        document.getElementById("w-hint").style.color="#ff6b4a";
       } else {
-        STATE.c1 += 1;
-        const secs = Math.floor(STATE.c1/10);
-        document.getElementById("c1-disp").textContent = fmt(secs);
-        document.getElementById("c1-bar").style.width = Math.min(100,(secs/600)*100)+"%";
-        const mins = STATE.c1/600;
-        if (mins > 0) {
-          const kpm = Math.round(STATE.ks/mins);
-          document.getElementById("w-kpm").textContent = kpm;
-        }
-        document.getElementById("w-xp").textContent = "+" + Math.max(1,Math.round(Math.floor(STATE.c1/10)/60));
+        STATE.c1+=1;
+        const secs=Math.floor(STATE.c1/10);
+        document.getElementById("c1-disp").textContent=fmt(secs);
+        document.getElementById("c1-bar").style.width=Math.min(100,(secs/600)*100)+"%";
+        const mins=STATE.c1/600;
+        if (mins>0) document.getElementById("w-kpm").textContent=Math.round(STATE.ks/mins);
+        document.getElementById("w-xp").textContent="+"+Math.max(1,Math.round(Math.floor(STATE.c1/10)/60));
       }
-    } else if (STATE.gameState === "paused") {
-      STATE.c2 += 1;
-      const secs = Math.floor(STATE.c2/10);
-      const pct = secs/C2_LIMIT;
-      const col = pct>.66?"#ff4444":pct>.33?"#ff9a4a":"#D4A843";
-      document.getElementById("c2-disp").textContent = fmt(secs);
-      document.getElementById("c2-disp").className = "clock-num cn-red";
-      document.getElementById("c2-bar").style.width = Math.min(100,pct*100)+"%";
-      document.getElementById("c2-bar").style.background = col;
+    } else if (STATE.gameState==="paused") {
+      STATE.c2+=1;
+      const secs=Math.floor(STATE.c2/10);
+      const pct=secs/C2_LIMIT;
+      const col=pct>.66?"#ff4444":pct>.33?"#ff9a4a":"#D4A843";
+      document.getElementById("c2-disp").textContent=fmt(secs);
+      document.getElementById("c2-disp").className="clock-num cn-red";
+      document.getElementById("c2-bar").style.width=Math.min(100,pct*100)+"%";
+      document.getElementById("c2-bar").style.background=col;
       document.getElementById("c2-box").classList.add("danger");
-      const left = Math.max(0, C2_LIMIT - secs);
-      document.getElementById("w-hint").textContent = "⚠ " + left + "s remaining";
-      if (secs >= C2_LIMIT) {
-        STATE.gameState = "lost";
-        finish("lost");
-      }
+      document.getElementById("w-hint").textContent="⚠ "+Math.max(0,C2_LIMIT-secs)+"s remaining";
+      if (secs>=C2_LIMIT) { STATE.gameState="lost"; finish("lost"); }
     }
   }, TICK_MS);
 }
-
-document.getElementById("w-area").addEventListener("keydown", e => {
+document.getElementById("w-area").addEventListener("keydown", e=>{
   if (STATE.done) return;
-  if (e.key.length===1||e.key==="Backspace"||e.key==="Enter") {
-    STATE.ks++; document.getElementById("w-ks").textContent = STATE.ks;
-  }
-  STATE.lastKey = Date.now();
-  if (STATE.gameState === "idle" || STATE.gameState === "paused") {
-    STATE.gameState = "typing"; setStatus("typing");
-    document.getElementById("c1-disp").className = "clock-num cn-gold";
+  if (e.key.length===1||e.key==="Backspace"||e.key==="Enter") { STATE.ks++; document.getElementById("w-ks").textContent=STATE.ks; }
+  STATE.lastKey=Date.now();
+  if (STATE.gameState==="idle"||STATE.gameState==="paused") {
+    STATE.gameState="typing"; setStatus("typing");
+    document.getElementById("c1-disp").className="clock-num cn-gold";
     document.getElementById("c2-box").classList.remove("danger");
-    document.getElementById("w-hint").textContent = "";
-    if (STATE.gameState !== "idle") {
-      document.getElementById("c2-disp").className = "clock-num cn-red";
-    }
+    document.getElementById("w-hint").textContent="";
   }
-  if (!STATE.done && STATE.ks === 1) {
-    document.getElementById("w-submit").style.display = "block";
-  }
+  if (!STATE.done&&STATE.ks===1) document.getElementById("w-submit").style.display="block";
 });
-document.getElementById("w-area").addEventListener("input", e => {
-  STATE.writingText = e.target.value;
-  if (STATE.gameState === "idle") {
-    STATE.gameState = "typing"; setStatus("typing");
-    document.getElementById("c1-disp").className = "clock-num cn-gold";
-    document.getElementById("w-hint").textContent = "";
-  }
+document.getElementById("w-area").addEventListener("input", e=>{
+  STATE.writingText=e.target.value;
+  if (STATE.gameState==="idle") { STATE.gameState="typing"; setStatus("typing"); document.getElementById("c1-disp").className="clock-num cn-gold"; document.getElementById("w-hint").textContent=""; }
 });
-
 function setStatus(st) {
-  const el = document.getElementById("w-status");
-  el.className = "status-badge s-"+st;
-  el.textContent = {idle:"Ready",typing:"● Writing",paused:"⚠ Paused",won:"✓ Submitted",lost:"✗ Time Out"}[st];
+  const el=document.getElementById("w-status");
+  el.className="status-badge s-"+st;
+  el.textContent={idle:"Ready",typing:"● Writing",paused:"⚠ Paused",won:"✓ Submitted",lost:"✗ Time Out"}[st];
 }
-
-function submitNow() {
-  if (STATE.done) return;
-  STATE.gameState = "won";
-  finish("won");
-}
-
+function submitNow() { if (!STATE.done) { STATE.gameState="won"; finish("won"); } }
 function goHome() {
-  clearInterval(STATE.iv);
-  STATE.done = true;
-  STATE.category = null; STATE.selPrompt = null;
-  document.querySelectorAll(".card").forEach(c => c.classList.remove("sel"));
-  document.getElementById("cat-btn").disabled = true;
-  renderCategory();
-  show("p-category");
+  clearInterval(STATE.iv); STATE.done=true;
+  STATE.category=null; STATE.selPrompt=null;
+  document.querySelectorAll(".card").forEach(c=>c.classList.remove("sel"));
+  document.getElementById("cat-btn").disabled=true;
+  renderCategory(); show("p-category");
 }
-
 async function finish(outcome) {
-  if (STATE.done) return; STATE.done = true;
-  clearInterval(STATE.iv);
-  setStatus(outcome);
-  document.getElementById("w-area").disabled = true;
-  document.getElementById("w-submit").style.display = "none";
-  const ov = document.getElementById("w-overlay");
-  document.getElementById("w-overlay-icon").innerHTML = keyIconSVG(outcome==="won"?"#D4A843":"#ff5555", 56);
-  document.getElementById("w-overlay-txt").style.color = outcome==="won"?"#D4A843":"#ff5555";
-  document.getElementById("w-overlay-txt").textContent = outcome==="won"?"Submitted":"Time Out";
+  if (STATE.done) return; STATE.done=true;
+  clearInterval(STATE.iv); setStatus(outcome);
+  document.getElementById("w-area").disabled=true;
+  document.getElementById("w-submit").style.display="none";
+  const ov=document.getElementById("w-overlay");
+  document.getElementById("w-overlay-icon").innerHTML=keyIconSVG(outcome==="won"?"#D4A843":"#ff5555", 56);
+  document.getElementById("w-overlay-txt").style.color=outcome==="won"?"#D4A843":"#ff5555";
+  document.getElementById("w-overlay-txt").textContent=outcome==="won"?"Submitted":"Time Out";
   ov.classList.add("show");
-
-  const c1s = Math.round(STATE.c1/10);
-  const c1m = c1s/60;
-  const kpm = c1m > 0.02 ? Math.round(STATE.ks/c1m) : 0;
-  const xp  = Math.max(1, Math.round(c1m));
-
-  const p = STATE.player || await loadPlayer(STATE.email);
-  const oldXP = p.active_xp || 0;
-  const newXP = oldXP + xp;
-  const isFirst = (p.session_count||0) === 0;
-  const triggered = checkMilestones(oldXP, newXP, p.milestones||[], isFirst);
-  const updated = { ...p, active_xp:newXP, session_count:(p.session_count||0)+1, milestones:[...(p.milestones||[]), ...triggered.map(m=>m.id)] };
-  await savePlayer(updated);
-  STATE.player = updated;
-
-  const sess = {
-    created_at: new Date().toISOString(), category: STATE.category,
-    topic: STATE.writingTopic, c1Seconds: c1s, c2Seconds: Math.round(STATE.c2/10),
-    keystrokes: STATE.ks, kpm, xp, outcome, text: STATE.writingText,
-  };
+  const c1s=Math.round(STATE.c1/10), c1m=c1s/60;
+  const kpm=c1m>0.02?Math.round(STATE.ks/c1m):0;
+  const xp=Math.max(1,Math.round(c1m));
+  const p=STATE.player||await loadPlayer(STATE.email);
+  const oldXP=p.active_xp||0, newXP=oldXP+xp;
+  const isFirst=(p.session_count||0)===0;
+  const triggered=checkMilestones(oldXP, newXP, p.milestones||[], isFirst);
+  const updated={...p, active_xp:newXP, session_count:(p.session_count||0)+1, milestones:[...(p.milestones||[]),...triggered.map(m=>m.id)]};
+  await savePlayer(updated); STATE.player=updated;
+  const sess={created_at:new Date().toISOString(), category:STATE.category, topic:STATE.writingTopic, c1Seconds:c1s, c2Seconds:Math.round(STATE.c2/10), keystrokes:STATE.ks, kpm, xp, outcome, text:STATE.writingText};
   await saveSession(STATE.email, sess);
   STATE.sessions.unshift(sess);
-  STATE.lastSession = { ...sess, totalXP: newXP };
-
-  setTimeout(() => {
+  STATE.lastSession={...sess, totalXP:newXP};
+  setTimeout(()=>{
     ov.classList.remove("show");
-    if (triggered.length > 0) {
-      milestoneQueue = [...triggered];
-      showMilestone(milestoneQueue[0]);
-    } else {
-      renderResults();
-      show("p-results");
-    }
+    if (triggered.length>0) { milestoneQueue=[...triggered]; showMilestone(milestoneQueue[0]); }
+    else { renderResults(); show("p-results"); }
   }, 900);
 }
 
 // ── Results ───────────────────────────────────────────────────
 function renderResults() {
-  const s = STATE.lastSession; if (!s) return;
-  document.getElementById("r-outcome").textContent = s.outcome==="won"?"Session Complete":"Session Ended";
-  document.getElementById("r-kpm").textContent = s.kpm;
-  document.getElementById("r-xp").textContent = "+"+s.xp;
-  document.getElementById("r-time").textContent = fmt(s.c1Seconds);
-  document.getElementById("r-total").textContent = s.totalXP;
-  const earned = STATE.player?.milestones||[];
-  const keysWrap = document.getElementById("r-keys");
-  const keysList = document.getElementById("r-keys-list");
-  keysList.innerHTML = "";
-  const ek = ["bronze","silver","gold","master"].filter(k=>earned.includes(k));
-  if (ek.length > 0) {
-    ek.forEach(k => {
-      const m = MILESTONES.find(m=>m.id===k);
-      keysList.innerHTML += `<div class="key-pill" style="color:${KEY_COLORS[k]};border-color:${KEY_COLORS[k]}40;background:${KEY_COLORS[k]}10;">${keyIconSVG(KEY_COLORS[k],14)} ${m?.label}</div>`;
-    });
-    keysWrap.style.display = "block";
-  } else keysWrap.style.display = "none";
+  const s=STATE.lastSession; if (!s) return;
+  document.getElementById("r-outcome").textContent=s.outcome==="won"?"Session Complete":"Session Ended";
+  document.getElementById("r-kpm").textContent=s.kpm;
+  document.getElementById("r-xp").textContent="+"+s.xp;
+  document.getElementById("r-time").textContent=fmt(s.c1Seconds);
+  document.getElementById("r-total").textContent=s.totalXP;
+  const earned=STATE.player?.milestones||[];
+  const keysWrap=document.getElementById("r-keys");
+  const keysList=document.getElementById("r-keys-list");
+  keysList.innerHTML="";
+  const ek=["bronze","silver","gold","master"].filter(k=>earned.includes(k));
+  if (ek.length>0) {
+    ek.forEach(k=>{ const m=MILESTONES.find(m=>m.id===k); keysList.innerHTML+='<div class="key-pill" style="color:'+KEY_COLORS[k]+';border-color:'+KEY_COLORS[k]+'40;background:'+KEY_COLORS[k]+'10;">'+keyIconSVG(KEY_COLORS[k],14)+' '+(m?.label||"")+'</div>'; });
+    keysWrap.style.display="block";
+  } else keysWrap.style.display="none";
+  const copyBtn=document.getElementById("r-copy-btn");
+  if (s.text) { copyBtn.style.display="block"; } else { copyBtn.style.display="none"; }
 }
+function copySessionText() { copyText(STATE.lastSession?.text||""); }
 
 // ── Progress ──────────────────────────────────────────────────
 function show_progress() {
-  const sessions = STATE.sessions;
-  const p = STATE.player;
-  const totalXP = (p?.active_xp||0)+(p?.passive_xp||0);
-  document.getElementById("pg-email").textContent = STATE.email;
-  document.getElementById("pg-xp-now").textContent = totalXP+" XP";
-  document.getElementById("pg-gold-bar").style.width = Math.min(100,(totalXP/50)*100)+"%";
-  const goldMsg = document.getElementById("pg-gold-msg");
-  if (totalXP >= 50) {
-    goldMsg.style.display = "block";
-    goldMsg.innerHTML = '🗝 Gold Key earned! Use password <strong>IK Rocks</strong> to <a href="https://www.infinitykey.rocks/book-online" target="_blank" style="color:#FFD700;">book your free session</a>.';
-  } else goldMsg.style.display = "none";
-
-  // Stats grid
-  const best = sessions.length ? Math.max(...sessions.map(s=>s.kpm||0)) : 0;
-  document.getElementById("pg-stats").innerHTML = [
-    {l:"Sessions",v:sessions.length},{l:"Total XP",v:totalXP},{l:"Best KPM",v:best}
-  ].map(s=>`<div style="background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);border-radius:10px;padding:14px;text-align:center;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:#D4A843;">${s.v}</div>
-    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-top:2px;">${s.l}</div>
-  </div>`).join("");
-
-  // Keys earned
-  const earned = p?.milestones||[];
-  const ek = ["bronze","silver","gold","master"].filter(k=>earned.includes(k));
-  const keysWrap = document.getElementById("pg-keys-wrap");
-  if (ek.length) {
-    document.getElementById("pg-keys-list").innerHTML = ek.map(k=>`<div class="key-pill" style="color:${KEY_COLORS[k]};border-color:${KEY_COLORS[k]}40;background:${KEY_COLORS[k]}10;">${keyIconSVG(KEY_COLORS[k],14)} ${MILESTONES.find(m=>m.id===k)?.label}</div>`).join("");
-    keysWrap.style.display = "block";
-  } else keysWrap.style.display = "none";
-
-  // Chart
-  if (sessions.length > 1) {
-    const kpms = [...sessions].reverse().map(s=>s.kpm||0);
-    const mx = Math.max(...kpms, 1);
-    document.getElementById("pg-chart").innerHTML = kpms.map(k=>`<div class="chart-bar" style="height:${Math.max(4,(k/mx)*72)}px;" title="${k} KPM"></div>`).join("");
-    document.getElementById("pg-chart-wrap").style.display = "block";
-  } else document.getElementById("pg-chart-wrap").style.display = "none";
-
-  // Session list
-  const el = document.getElementById("pg-sessions");
-  if (!sessions.length) { el.innerHTML = '<div class="empty">No sessions yet. Begin your first training.</div>'; return; }
-  el.innerHTML = sessions.map((s,i)=>`
-    <div class="sess-item" id="si-${i}" onclick="toggleSess('si-${i}','sb-${i}')">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:14px;font-family:'Cormorant Garamond',serif;font-weight:600;margin-bottom:2px;">${s.topic||"Session"}</div>
-          <div style="font-size:10px;color:rgba(237,232,216,.25);">${new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})} · ${s.outcome==="won"?"✓ Submitted":"✗ Timed Out"} · ${fmt(s.c1Seconds||0)} active</div>
-        </div>
-        <div style="display:flex;gap:14px;">
-          <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#D4A843;line-height:1;">${s.kpm}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>
-          <div style="text-align:center;"><div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#4eff91;line-height:1;">+${s.xp}</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>
-        </div>
-      </div>
-      <div class="sess-body" id="sb-${i}">${s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>"}</div>
-    </div>`).join("");
+  const sessions=STATE.sessions, p=STATE.player;
+  const totalXP=(p?.active_xp||0)+(p?.passive_xp||0);
+  document.getElementById("pg-email").textContent=STATE.email;
+  document.getElementById("pg-xp-now").textContent=totalXP+" XP";
+  document.getElementById("pg-gold-bar").style.width=Math.min(100,(totalXP/50)*100)+"%";
+  const goldMsg=document.getElementById("pg-gold-msg");
+  if (totalXP>=50) { goldMsg.style.display="block"; goldMsg.innerHTML='🗝 Gold Key earned! Use password <strong>IK Rocks</strong> to <a href="https://www.infinitykey.rocks/book-online" target="_blank" style="color:#FFD700;">book your free session</a>.'; }
+  else goldMsg.style.display="none";
+  const best=sessions.length?Math.max(...sessions.map(s=>s.kpm||0)):0;
+  document.getElementById("pg-stats").innerHTML=[{l:"Sessions",v:sessions.length},{l:"Total XP",v:totalXP},{l:"Best KPM",v:best}]
+    .map(s=>'<div style="background:rgba(255,255,255,.025);border:1px solid rgba(212,168,67,.1);border-radius:10px;padding:14px;text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:30px;font-weight:700;color:#D4A843;">'+s.v+'</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-top:2px;">'+s.l+'</div></div>').join("");
+  const earned=p?.milestones||[];
+  const ek=["bronze","silver","gold","master"].filter(k=>earned.includes(k));
+  const keysWrap=document.getElementById("pg-keys-wrap");
+  if (ek.length) { document.getElementById("pg-keys-list").innerHTML=ek.map(k=>'<div class="key-pill" style="color:'+KEY_COLORS[k]+';border-color:'+KEY_COLORS[k]+'40;background:'+KEY_COLORS[k]+'10;">'+keyIconSVG(KEY_COLORS[k],14)+' '+(MILESTONES.find(m=>m.id===k)?.label||"")+'</div>').join(""); keysWrap.style.display="block"; }
+  else keysWrap.style.display="none";
+  if (sessions.length>1) {
+    const kpms=[...sessions].reverse().map(s=>s.kpm||0);
+    const mx=Math.max(...kpms,1);
+    document.getElementById("pg-chart").innerHTML=kpms.map(k=>'<div class="chart-bar" style="height:'+Math.max(4,(k/mx)*72)+'px;" title="'+k+' KPM"></div>').join("");
+    document.getElementById("pg-chart-wrap").style.display="block";
+  } else document.getElementById("pg-chart-wrap").style.display="none";
+  const el=document.getElementById("pg-sessions");
+  if (!sessions.length) { el.innerHTML='<div class="empty">No sessions yet. Begin your first training.</div>'; return; }
+  el.innerHTML=sessions.map((s,i)=>{
+    const dateStr=new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+    return '<div class="sess-item" id="si-'+i+'" onclick="toggleSess(\'si-'+i+'\',\'sb-'+i+'\')">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+      +'<div><div style="font-size:14px;font-family:\'Cormorant Garamond\',serif;font-weight:600;margin-bottom:2px;">'+( s.topic||"Session")+'</div>'
+      +'<div style="font-size:10px;color:rgba(237,232,216,.25);">'+dateStr+' · '+(s.outcome==="won"?"✓ Submitted":"✗ Timed Out")+' · '+fmt(s.c1Seconds||0)+' active</div></div>'
+      +'<div style="display:flex;gap:8px;align-items:center;">'
+      +(s.text?'<button class="copy-btn" onclick="event.stopPropagation();copyText(\''+encodeURIComponent(s.text||"")+'\'.split(\',\').join(\',\'))" style="display:none;" id="pgcopy-'+i+'">📋</button>':'')
+      +'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:700;color:#D4A843;line-height:1;">'+s.kpm+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>'
+      +'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:22px;font-weight:700;color:#4eff91;line-height:1;">+'+s.xp+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>'
+      +'</div></div>'
+      +'<div class="sess-body" id="sb-'+i+'">'+(s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>")+'</div>'
+      +'</div>';
+  }).join("");
+  // store session texts for copy
+  window._pgSessions = sessions;
 }
-
 function toggleSess(itemId, bodyId) {
-  const item = document.getElementById(itemId);
-  const body = document.getElementById(bodyId);
-  const isOpen = item.classList.contains("open");
-  item.classList.toggle("open", !isOpen);
-  body.style.display = isOpen ? "none" : "block";
+  const item=document.getElementById(itemId), body=document.getElementById(bodyId);
+  const isOpen=item.classList.contains("open");
+  item.classList.toggle("open",!isOpen);
+  body.style.display=isOpen?"none":"block";
+  // show/hide copy button
+  const idx=bodyId.replace("sb-","");
+  const copyBtn=document.getElementById("pgcopy-"+idx);
+  if (copyBtn) copyBtn.style.display=isOpen?"none":"inline-flex";
 }
-
-// Override show() to hook into progress rendering
-const _show = show;
-window.show = function(pageId) {
-  _show(pageId);
-  if (pageId === "p-progress") show_progress();
-};
 
 // ── Coach ─────────────────────────────────────────────────────
 function renderCoach() {
-  document.getElementById("coach-count").textContent = `Players — ${STATE.allPlayers.length} on record`;
+  document.getElementById("coach-count").textContent="Players — "+STATE.allPlayers.length+" on record";
   renderCoachGrid();
 }
-function filterCoach(val) { STATE.coachFilter = val; renderCoachGrid(); }
+function filterCoach(val) { STATE.coachFilter=val; renderCoachGrid(); }
 function renderCoachGrid() {
-  const filtered = STATE.allPlayers.filter(p => !STATE.coachFilter || p.email.includes(STATE.coachFilter.toLowerCase()));
-  const el = document.getElementById("coach-grid");
-  if (!filtered.length) { el.innerHTML = '<div style="grid-column:1/-1;color:rgba(237,232,216,.2);font-size:13px;font-style:italic;">No players found.</div>'; return; }
-  el.innerHTML = filtered.map(p => {
-    const xp = (p.active_xp||0)+(p.passive_xp||0);
-    const keys = ["bronze","silver","gold","master"].filter(k=>(p.milestones||[]).includes(k));
-    const certSent = (p.milestones||[]).includes("cert_sent");
-    const badge50 = xp >= 50
-      ? '<div style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(78,255,145,.08);border:1px solid rgba(78,255,145,.25);border-radius:20px;font-size:9px;font-weight:700;color:#4eff91;letter-spacing:.08em;">🎖️ 50 XP' + (certSent ? ' · Sent' : '') + '</div>'
+  const filtered=STATE.allPlayers.filter(p=>!STATE.coachFilter||p.email.includes(STATE.coachFilter.toLowerCase()));
+  const el=document.getElementById("coach-grid");
+  if (!filtered.length) { el.innerHTML='<div style="grid-column:1/-1;color:rgba(237,232,216,.2);font-size:13px;font-style:italic;">No players found.</div>'; return; }
+  el.innerHTML=filtered.map(p=>{
+    const xp=(p.active_xp||0)+(p.passive_xp||0);
+    const keys=["bronze","silver","gold","master"].filter(k=>(p.milestones||[]).includes(k));
+    const certSent=(p.milestones||[]).includes("cert_sent");
+    const badge50=xp>=50
+      ? '<div style="margin-top:6px;display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(78,255,145,.08);border:1px solid rgba(78,255,145,.25);border-radius:20px;font-size:9px;font-weight:700;color:#4eff91;letter-spacing:.08em;">🎖️ 50 XP'+(certSent?' · Sent':'')+'</div>'
       : '';
-    const act = STATE.selPlayer?.email===p.email ? 'act' : '';
-    return '<div class="player-card ' + act + '" onclick="selectCoachPlayer(\'' + p.email + '\')">'
-      + '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:#D4A843;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + p.email + '</div>'
-      + '<div style="font-size:11px;color:rgba(237,232,216,.3);">' + xp + ' XP · ' + (p.session_count||0) + ' sessions</div>'
-      + badge50
-      + '<div style="display:flex;gap:3px;margin-top:6px;">' + keys.map(k=>keyIconSVG(KEY_COLORS[k],14)).join("") + '</div>'
-      + '</div>';
+    const act=STATE.selPlayer?.email===p.email?'act':'';
+    return '<div class="player-card '+act+'" onclick="selectCoachPlayer(\''+p.email+'\')">'
+      +'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:#D4A843;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+p.email+'</div>'
+      +'<div style="font-size:11px;color:rgba(237,232,216,.3);">'+xp+' XP · '+(p.session_count||0)+' sessions</div>'
+      +badge50
+      +'<div style="display:flex;gap:3px;margin-top:6px;">'+keys.map(k=>keyIconSVG(KEY_COLORS[k],14)).join("")+'</div>'
+      +'</div>';
   }).join("");
 }
 async function selectCoachPlayer(email) {
-  const p = STATE.allPlayers.find(pl=>pl.email===email);
-  STATE.selPlayer = p;
-  STATE.coachSessions = await loadSessions(email);
+  const p=STATE.allPlayers.find(pl=>pl.email===email);
+  STATE.selPlayer=p;
+  STATE.coachSessions=await loadSessions(email);
   renderCoachGrid();
   renderCoachDetail();
 }
 function renderCoachDetail() {
-  const p = STATE.selPlayer; if (!p) return;
-  const sessions = STATE.coachSessions;
-  const kpms = sessions.map(s=>s.kpm||0);
-  const mx = Math.max(...kpms, 1);
-  const txp = (p.active_xp||0)+(p.passive_xp||0);
-  const avgKpm = kpms.length ? Math.round(kpms.reduce((a,b)=>a+b,0)/kpms.length) : 0;
-  const bestKpm = kpms.length ? Math.max(...kpms) : 0;
-  const done = sessions.filter(s=>s.outcome==="won").length;
-  const statsHTML = [{l:"Best KPM",v:bestKpm},{l:"Avg KPM",v:avgKpm},{l:"Done",v:done+"/"+sessions.length}]
-    .map(s => '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:700;color:#c084fc;line-height:1;">'+s.v+'</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(237,232,216,.25);">'+s.l+'</div></div>').join("");
+  const p=STATE.selPlayer; if (!p) return;
+  const sessions=STATE.coachSessions;
+  const kpms=sessions.map(s=>s.kpm||0);
+  const mx=Math.max(...kpms,1);
+  const txp=(p.active_xp||0)+(p.passive_xp||0);
+  const avgKpm=kpms.length?Math.round(kpms.reduce((a,b)=>a+b,0)/kpms.length):0;
+  const bestKpm=kpms.length?Math.max(...kpms):0;
+  const done=sessions.filter(s=>s.outcome==="won").length;
+  const certSent=(p.milestones||[]).includes("cert_sent");
 
-  const kpmBars = kpms.length > 1
+  const statsHTML=[{l:"Best KPM",v:bestKpm},{l:"Avg KPM",v:avgKpm},{l:"Done",v:done+"/"+sessions.length}]
+    .map(s=>'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:24px;font-weight:700;color:#c084fc;line-height:1;">'+s.v+'</div><div style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(237,232,216,.25);">'+s.l+'</div></div>').join("");
+
+  const kpmBars=kpms.length>1
     ? '<div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:6px;">KPM Trend</div>'
-      + '<div class="chart-bars" style="height:48px;margin-bottom:12px;">'
-      + [...kpms].reverse().map(k=>'<div class="chart-bar" style="height:'+Math.max(4,(k/mx)*44)+'px;background:linear-gradient(0deg,#a259ff,#c084fc);"></div>').join("")
-      + '</div>'
+      +'<div class="chart-bars" style="height:48px;margin-bottom:12px;">'
+      +[...kpms].reverse().map(k=>'<div class="chart-bar" style="height:'+Math.max(4,(k/mx)*44)+'px;background:linear-gradient(0deg,#a259ff,#c084fc);"></div>').join("")
+      +'</div>'
     : '';
 
-  const certSent = (p.milestones||[]).includes("cert_sent");
-  const milestoneHTML = txp >= 50
+  const milestoneHTML=txp>=50
     ? '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(78,255,145,.05);border:1px solid rgba(78,255,145,.2);border-radius:10px;margin-bottom:16px;">'
-      + '<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">🎖️</span>'
-      + '<div><div style="font-size:11px;font-weight:700;color:#4eff91;letter-spacing:.1em;text-transform:uppercase;">50 XP Milestone</div>'
-      + '<div style="font-size:10px;color:rgba(237,232,216,.35);margin-top:1px;">Qualifies for free personalised session</div></div></div>'
-      + '<label style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="event.stopPropagation()">'
-      + '<input type="checkbox" id="cert-sent-cb" ' + (certSent ? 'checked' : '') + ' onchange="toggleCertSent(\'' + p.email + '\', this.checked)" style="width:16px;height:16px;accent-color:#4eff91;cursor:pointer;">'
-      + '<span style="font-size:11px;font-weight:600;color:rgba(237,232,216,.55);">Certificate Sent</span></label></div>'
+      +'<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:18px;">🎖️</span>'
+      +'<div><div style="font-size:11px;font-weight:700;color:#4eff91;letter-spacing:.1em;text-transform:uppercase;">50 XP Milestone</div>'
+      +'<div style="font-size:10px;color:rgba(237,232,216,.35);margin-top:1px;">Qualifies for free personalised session</div></div></div>'
+      +'<label style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="event.stopPropagation()">'
+      +'<input type="checkbox" id="cert-sent-cb" '+(certSent?'checked':'')+' onchange="toggleCertSent(\''+p.email+'\', this.checked)" style="width:16px;height:16px;accent-color:#4eff91;cursor:pointer;">'
+      +'<span style="font-size:11px;font-weight:600;color:rgba(237,232,216,.55);">Certificate Sent</span></label></div>'
     : '';
 
-  const sessionsHTML = !sessions.length
+  const sessionsHTML=!sessions.length
     ? '<div class="empty" style="padding:20px 0;">No sessions yet.</div>'
-    : sessions.map((s,i) => {
-        const wonBg = s.outcome==="won" ? "rgba(78,255,145,.1)" : "rgba(255,85,85,.1)";
-        const wonCol = s.outcome==="won" ? "#4eff91" : "#ff5555";
-        const wonBorder = s.outcome==="won" ? "rgba(78,255,145,.25)" : "rgba(255,85,85,.2)";
-        const wonLabel = s.outcome==="won" ? "Submitted" : "Timed Out";
-        const dateStr = new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
-        return '<div class="coach-ses" id="cs-'+i+'" onclick="toggleSess(\'cs-'+i+'\',\'csb-'+i+'\')">'
-          + '<div style="display:flex;justify-content:space-between;align-items:center;">'
-          + '<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">'
-          + '<span style="font-family:\'Cormorant Garamond\',serif;font-size:14px;font-weight:600;">'+(s.topic||"Session")+'</span>'
-          + '<span style="padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;background:'+wonBg+';color:'+wonCol+';border:1px solid '+wonBorder+';">'+wonLabel+'</span>'
-          + '</div><div style="font-size:10px;color:rgba(237,232,216,.25);">'+dateStr+' · Active: '+fmt(s.c1Seconds||0)+' · '+(s.keystrokes||0)+' keystrokes</div></div>'
-          + '<div style="display:flex;gap:12px;">'
-          + '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#D4A843;line-height:1;">'+          + '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#D4A843;line-height:1;">'+s.kpm+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>'
-          + '<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#4eff91;line-height:1;">+'+s.xp+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>'
-          + '</div></div>'
-          + '<div class="sess-body" id="csb-'+i+'" style="display:none;">'+(s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>")+'</div>'
-          + '</div>';
+    : sessions.map((s,i)=>{
+        const wonBg=s.outcome==="won"?"rgba(78,255,145,.1)":"rgba(255,85,85,.1)";
+        const wonCol=s.outcome==="won"?"#4eff91":"#ff5555";
+        const wonBorder=s.outcome==="won"?"rgba(78,255,145,.25)":"rgba(255,85,85,.2)";
+        const wonLabel=s.outcome==="won"?"Submitted":"Timed Out";
+        const dateStr=new Date(s.created_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+        return '<div class="coach-ses" id="cs-'+i+'" onclick="toggleCoachSess('+i+')">'
+          +'<div style="display:flex;justify-content:space-between;align-items:center;">'
+          +'<div><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">'
+          +'<span style="font-family:\'Cormorant Garamond\',serif;font-size:14px;font-weight:600;">'+(s.topic||"Session")+'</span>'
+          +'<span style="padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;text-transform:uppercase;background:'+wonBg+';color:'+wonCol+';border:1px solid '+wonBorder+';">'+wonLabel+'</span>'
+          +'</div><div style="font-size:10px;color:rgba(237,232,216,.25);">'+dateStr+' · Active: '+fmt(s.c1Seconds||0)+' · '+(s.keystrokes||0)+' keystrokes</div></div>'
+          +'<div style="display:flex;gap:8px;align-items:center;">'
+          +(s.text?'<button class="copy-btn" id="cscopy-'+i+'" style="display:none;" onclick="event.stopPropagation();copyCoachSessText('+i+')">📋 Copy</button>':'')
+          +'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#D4A843;line-height:1;">'+s.kpm+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">KPM</div></div>'
+          +'<div style="text-align:center;"><div style="font-family:\'Cormorant Garamond\',serif;font-size:20px;font-weight:700;color:#4eff91;line-height:1;">+'+s.xp+'</div><div style="font-size:8px;text-transform:uppercase;color:rgba(237,232,216,.25);">XP</div></div>'
+          +'</div></div>'
+          +'<div class="sess-body" id="csb-'+i+'" style="display:none;">'+(s.text||"<em style='color:rgba(237,232,216,.2)'>No text recorded.</em>")+'</div>'
+          +'</div>';
       }).join("");
 
-  document.getElementById("coach-detail").innerHTML = `
-    <div style="background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);border-radius:14px;padding:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <div>
-          <div style="font-family:JetBrains Mono,monospace;font-size:13px;color:#D4A843;">${p.email}</div>
-          <div style="font-size:11px;color:rgba(237,232,216,.3);margin-top:2px;">${sessions.length} sessions · ${txp} XP</div>
-        </div>
-        <div style="display:flex;gap:16px;">${statsHTML}</div>
-      </div>
-      ${kpmBars}
-      ${milestoneHTML}
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);margin-bottom:10px;">Sessions — newest first</div>
-      ${sessionsHTML}
-    </div>`;
+  document.getElementById("coach-detail").innerHTML =
+    '<div style="background:rgba(255,255,255,.02);border:1px solid rgba(212,168,67,.1);border-radius:14px;padding:24px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">'
+    +'<div><div style="font-family:JetBrains Mono,monospace;font-size:13px;color:#D4A843;">'+p.email+'</div>'
+    +'<div style="font-size:11px;color:rgba(237,232,216,.3);margin-top:2px;">'+sessions.length+' sessions · '+txp+' XP</div></div>'
+    +'<div style="display:flex;gap:16px;">'+statsHTML+'</div></div>'
+    +kpmBars+milestoneHTML
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+    +'<div style="font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:rgba(237,232,216,.25);">Sessions — newest first</div>'
+    +'<button class="del-btn" onclick="deletePlayerCoach(\''+p.email+'\')">🗑 Delete Player</button>'
+    +'</div>'
+    +sessionsHTML+'</div>';
+}
+function toggleCoachSess(i) {
+  const item=document.getElementById("cs-"+i), body=document.getElementById("csb-"+i);
+  if (!item||!body) return;
+  const isOpen=item.classList.contains("open");
+  item.classList.toggle("open",!isOpen);
+  body.style.display=isOpen?"none":"block";
+  const copyBtn=document.getElementById("cscopy-"+i);
+  if (copyBtn) copyBtn.style.display=isOpen?"none":"inline-flex";
+}
+function copyCoachSessText(i) {
+  const s=STATE.coachSessions[i];
+  if (s) copyText(s.text||"");
 }
 async function toggleCertSent(email, checked) {
-  const p = STATE.allPlayers.find(pl => pl.email === email);
-  if (!p) return;
-  const m = [...(p.milestones || [])];
-  if (checked && !m.includes("cert_sent")) m.push("cert_sent");
-  else if (!checked) { const i = m.indexOf("cert_sent"); if (i > -1) m.splice(i, 1); }
-  p.milestones = m;
-  try {
-    await sb.from("players").upsert(
-      { email: p.email, active_xp: p.active_xp, passive_xp: p.passive_xp, milestones: m, session_count: p.session_count },
-      { onConflict: "email" }
-    );
-  } catch(e) { console.error("toggleCertSent:", e); }
+  const p=STATE.allPlayers.find(pl=>pl.email===email); if (!p) return;
+  const m=[...(p.milestones||[])];
+  if (checked&&!m.includes("cert_sent")) m.push("cert_sent");
+  else if (!checked) { const i=m.indexOf("cert_sent"); if (i>-1) m.splice(i,1); }
+  p.milestones=m;
+  try { await sb.from("players").upsert({email:p.email,active_xp:p.active_xp,passive_xp:p.passive_xp,milestones:m,session_count:p.session_count},{onConflict:"email"}); } catch(e) { console.error(e); }
   renderCoachGrid();
 }
-async function coachRefresh() {
-  const btn = document.getElementById("coach-refresh-btn");
-  btn.textContent = "Loading…"; btn.disabled = true;
-  STATE.allPlayers = await loadAllPlayers();
-  STATE.selPlayer = null;
-  document.getElementById("coach-detail").innerHTML = "";
+async function deletePlayerCoach(email) {
+  if (!confirm("Permanently delete "+email+" and all their sessions? This cannot be undone.")) return;
+  await deletePlayerDB(email);
+  STATE.allPlayers=STATE.allPlayers.filter(p=>p.email!==email);
+  STATE.selPlayer=null;
+  document.getElementById("coach-detail").innerHTML="";
   renderCoach();
-  btn.textContent = "↻ Refresh"; btn.disabled = false;
+  showToast("Player deleted.");
+}
+async function coachRefresh() {
+  const btn=document.getElementById("coach-refresh-btn");
+  btn.textContent="Loading…"; btn.disabled=true;
+  if (STATE.coachAccount) {
+    STATE.allPlayers=await loadCoachPlayers(STATE.coachAccount.email);
+  } else {
+    STATE.allPlayers=await loadAllPlayers();
+  }
+  STATE.selPlayer=null;
+  document.getElementById("coach-detail").innerHTML="";
+  renderCoach();
+  btn.textContent="↻ Refresh"; btn.disabled=false;
+}
+
+// ── Admin ─────────────────────────────────────────────────────
+function renderAdmin() {
+  switchAdminTab(STATE.adminTab);
+}
+function switchAdminTab(tab) {
+  STATE.adminTab=tab;
+  document.getElementById("tab-players").classList.toggle("act", tab==="players");
+  document.getElementById("tab-coaches").classList.toggle("act", tab==="coaches");
+  document.getElementById("admin-players-panel").style.display=tab==="players"?"block":"none";
+  document.getElementById("admin-coaches-panel").style.display=tab==="coaches"?"block":"none";
+  if (tab==="players") renderAdminPlayers();
+  else renderAdminCoaches();
+}
+function filterAdminPlayers(val) { STATE.adminPlayerSearch=val; renderAdminPlayers(); }
+function filterAdminByCoach(val) { STATE.adminCoachFilterVal=val; renderAdminPlayers(); }
+function renderAdminPlayers() {
+  let players=STATE.adminPlayers;
+  if (STATE.adminPlayerSearch) players=players.filter(p=>p.email.includes(STATE.adminPlayerSearch.toLowerCase()));
+  if (STATE.adminCoachFilterVal) {
+    if (STATE.adminCoachFilterVal==="__unassigned__") players=players.filter(p=>!p.coach_email);
+    else players=players.filter(p=>p.coach_email===STATE.adminCoachFilterVal);
+  }
+  // Update coach filter dropdown
+  const sel=document.getElementById("admin-coach-filter");
+  if (sel) {
+    const curVal=sel.value;
+    sel.innerHTML='<option value="">All coaches</option>'
+      +'<option value="__unassigned__">Unassigned</option>'
+      +STATE.allCoaches.map(c=>'<option value="'+c.email+'"'+(curVal===c.email?' selected':'')+'>'+(c.name||c.email)+'</option>').join("");
+  }
+  const el=document.getElementById("admin-players-list");
+  if (!players.length) { el.innerHTML='<div class="empty">No players found.</div>'; return; }
+  el.innerHTML=players.map(p=>{
+    const xp=(p.active_xp||0)+(p.passive_xp||0);
+    const coachOpts='<option value="">Unassigned</option>'
+      +STATE.allCoaches.map(c=>'<option value="'+c.email+'"'+(p.coach_email===c.email?' selected':'')+'>'+( c.name||c.email)+'</option>').join("");
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(255,255,255,.02);border:1px solid rgba(237,232,216,.06);border-radius:10px;margin-bottom:6px;gap:12px;">'
+      +'<div style="flex:1;min-width:0;">'
+      +'<div style="font-family:JetBrains Mono,monospace;font-size:12px;color:#D4A843;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+p.email+'</div>'
+      +'<div style="font-size:11px;color:rgba(237,232,216,.3);margin-top:2px;">'+xp+' XP · '+(p.session_count||0)+' sessions</div>'
+      +'</div>'
+      +'<select onchange="adminAssignPlayer(\''+p.email+'\', this.value)" style="padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(237,232,216,.1);border-radius:6px;color:#EDE8D8;font-size:11px;font-family:\'DM Sans\',sans-serif;outline:none;cursor:pointer;">'
+      +coachOpts+'</select>'
+      +'<button class="del-btn" onclick="adminDeletePlayer(\''+p.email+'\')">🗑 Delete</button>'
+      +'</div>';
+  }).join("");
+}
+function renderAdminCoaches() {
+  const el=document.getElementById("admin-coaches-list");
+  if (!STATE.allCoaches.length) { el.innerHTML='<div class="empty">No coaches yet. Add one below.</div>'; return; }
+  const playerCounts={};
+  STATE.adminPlayers.forEach(p=>{ if (p.coach_email) playerCounts[p.coach_email]=(playerCounts[p.coach_email]||0)+1; });
+  el.innerHTML=STATE.allCoaches.map(c=>{
+    const count=playerCounts[c.email]||0;
+    const hasPw=c.password?'<span style="color:#4eff91;font-size:10px;">● Password set</span>':'<span style="color:rgba(237,232,216,.3);font-size:10px;">○ No password yet</span>';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:rgba(255,255,255,.02);border:1px solid rgba(255,107,74,.08);border-radius:10px;margin-bottom:8px;gap:12px;">'
+      +'<div style="flex:1;">'
+      +'<div style="font-family:JetBrains Mono,monospace;font-size:12px;color:#ff6b4a;">'+c.email+'</div>'
+      +'<div style="font-size:11px;color:rgba(237,232,216,.3);margin-top:2px;">'+(c.name?c.name+' · ':'')+count+' players · '+hasPw+'</div>'
+      +'</div>'
+      +'<button class="del-btn" onclick="adminRemoveCoach(\''+c.email+'\')">Remove</button>'
+      +'</div>';
+  }).join("");
+}
+async function addCoach() {
+  const email=document.getElementById("new-coach-email").value.trim().toLowerCase();
+  const name=document.getElementById("new-coach-name").value.trim();
+  const err=document.getElementById("add-coach-err");
+  if (!email||!email.includes("@")) { err.textContent="Enter a valid email."; err.style.display="block"; return; }
+  if (STATE.allCoaches.find(c=>c.email===email)) { err.textContent="This email is already a coach."; err.style.display="block"; return; }
+  err.style.display="none";
+  const newCoach={email, name, password:""};
+  await saveCoach(newCoach);
+  STATE.allCoaches.push(newCoach);
+  document.getElementById("new-coach-email").value="";
+  document.getElementById("new-coach-name").value="";
+  renderAdminCoaches();
+  showToast("Coach added: "+email);
+}
+async function adminRemoveCoach(email) {
+  if (!confirm("Remove coach "+email+"? Their players will become unassigned.")) return;
+  await removeCoachDB(email);
+  STATE.allCoaches=STATE.allCoaches.filter(c=>c.email!==email);
+  STATE.adminPlayers=STATE.adminPlayers.map(p=>p.coach_email===email?{...p,coach_email:null}:p);
+  renderAdminCoaches();
+  showToast("Coach removed.");
+}
+async function adminAssignPlayer(playerEmail, coachEmail) {
+  await assignPlayerCoach(playerEmail, coachEmail||null);
+  const p=STATE.adminPlayers.find(pl=>pl.email===playerEmail);
+  if (p) p.coach_email=coachEmail||null;
+  showToast(coachEmail?"Assigned to "+coachEmail:"Unassigned.");
+}
+async function adminDeletePlayer(email) {
+  if (!confirm("Permanently delete "+email+" and all their sessions? This cannot be undone.")) return;
+  await deletePlayerDB(email);
+  STATE.adminPlayers=STATE.adminPlayers.filter(p=>p.email!==email);
+  renderAdminPlayers();
+  showToast("Player deleted.");
+}
+async function adminRefresh() {
+  STATE.allCoaches=await loadCoaches();
+  STATE.adminPlayers=await loadAllPlayers();
+  renderAdmin();
+  showToast("Refreshed.");
 }
 </script>
 </body>
